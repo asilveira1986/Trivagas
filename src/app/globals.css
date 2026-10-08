@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+/* Identidade visual do Trivagas (cores estimadas a partir do logotipo; confirmar com o arquivo original). */
+:root {
+  --brand-green: #00a651;
+  --brand-red: #e31b23;
+  --brand-yellow: #ffcb05;
+  --brand-navy: #1b2836;
+
+  --background: #ffffff;
+  --foreground: var(--brand-navy);
+  --card: #ffffff;
+  --card-foreground: var(--brand-navy);
+  --muted: #f3f5f7;
+  --muted-foreground: #5b6775;
+  --primary: var(--brand-green);
+  --primary-foreground: #ffffff;
+  --secondary: var(--brand-navy);
+  --secondary-foreground: #ffffff;
+  --accent: var(--brand-yellow);
+  --accent-foreground: var(--brand-navy);
+  --destructive: var(--brand-red);
+  --destructive-foreground: #ffffff;
+  --border: #dfe4ea;
+  --input: #cfd6de;
+  --ring: var(--brand-green);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-brand-green: var(--brand-green);
+  --color-brand-red: var(--brand-red);
+  --color-brand-yellow: var(--brand-yellow);
+  --color-brand-navy: var(--brand-navy);
+
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+}
