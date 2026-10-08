@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { CitySelect } from "@/components/forms/city-select";
 import { Field } from "@/components/forms/field";
 import { QuestionsEditor, type EditableQuestion } from "@/components/jobs/questions-editor";
-import { SkillPicker, type SelectedSkill, type SkillOption } from "@/components/jobs/skill-picker";
+import { REQUIREMENT_TAGS, SkillPicker, type SelectedSkill, type SkillOption } from "@/components/jobs/skill-picker";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -206,8 +206,18 @@ export function JobForm({
         <div className="flex flex-col gap-2 sm:col-span-2">
           <span className="text-sm font-semibold">Habilidades</span>
           {errors.skills && <p className="text-sm text-destructive">{errors.skills[0]}</p>}
-          <SkillPicker catalog={skills} value={selectedSkills} onChange={setSelectedSkills} />
-          <input type="hidden" name="skills" value={JSON.stringify(selectedSkills)} />
+          <SkillPicker
+            catalog={skills}
+            value={selectedSkills}
+            onChange={setSelectedSkills}
+            tags={REQUIREMENT_TAGS}
+            defaultTag="required"
+          />
+          <input
+            type="hidden"
+            name="skills"
+            value={JSON.stringify(selectedSkills.map((s) => ({ skill_id: s.skill_id, requirement: s.tag })))}
+          />
         </div>
       </section>
 

@@ -43,7 +43,7 @@ export default async function EditJobPage({ params, searchParams }: PageProps<"/
           minExperienceYears: job.min_experience_months ? String(Math.round((job.min_experience_months / 12) * 10) / 10) : "",
           skills: job.job_skills
             .filter((s) => s.skills)
-            .map((s) => ({ skill_id: s.skills!.id, requirement: s.requirement })),
+            .map((s) => ({ skill_id: s.skills!.id, tag: s.requirement })),
           questions: job.job_questions.map((q) => ({
             key: q.id,
             id: q.id,

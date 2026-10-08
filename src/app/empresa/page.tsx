@@ -45,7 +45,7 @@ export default async function CompanyHome({ searchParams }: PageProps<"/empresa"
     { label: "Vagas publicadas", value: all.filter((job) => job.status === "published").length, href: "/empresa/vagas?status=published" },
     { label: "Em análise", value: all.filter((job) => job.status === "in_review").length, href: "/empresa/vagas?status=in_review" },
     { label: "Encerram em 7 dias", value: closingSoon.length, href: "/empresa/vagas?status=published" },
-    { label: "Candidaturas recebidas", value: applications ?? 0, href: "/empresa/vagas" },
+    { label: "Candidaturas recebidas", value: applications ?? 0, href: "/empresa/candidatos" },
   ];
 
   return (

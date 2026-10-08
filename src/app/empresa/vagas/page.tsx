@@ -111,9 +111,9 @@ export default async function JobsPage({ searchParams }: PageProps<"/empresa/vag
                 <span className="flex items-center gap-1">
                   <Eye className="size-4" /> {viewTotals.get(job.id) ?? 0} visualizações
                 </span>
-                <span className="flex items-center gap-1">
+                <Link href={`/empresa/candidatos?vaga=${job.id}`} className="flex items-center gap-1 hover:text-primary">
                   <UsersRound className="size-4" /> {job.applications[0]?.count ?? 0} candidaturas
-                </span>
+                </Link>
               </div>
               <JobActions job={job} />
             </li>

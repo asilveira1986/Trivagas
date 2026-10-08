@@ -4,7 +4,7 @@
 \set ON_ERROR_STOP 1
 
 create schema test;
-grant usage on schema test to anon, authenticated;
+grant usage on schema test to anon, authenticated, service_role;
 
 create function test.expect_error(statement text, expected text default null) returns void
 language plpgsql as $$
@@ -34,7 +34,7 @@ language sql security definer set search_path = '' as $$
   select id from public.jobs where title = job_title;
 $$;
 
-grant execute on all functions in schema test to anon, authenticated;
+grant execute on all functions in schema test to anon, authenticated, service_role;
 
 -- Usuários de teste (o gatilho cria os perfis)
 insert into auth.users (id, email, raw_user_meta_data) values

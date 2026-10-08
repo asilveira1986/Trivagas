@@ -6,7 +6,19 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 export type SkillOption = { id: string; name: string };
-export type SelectedSkill = { skill_id: string; requirement: "required" | "desired" };
+export type SelectedSkill = { skill_id: string; tag: string };
+export type SkillTag = { value: string; label: string; activeClassName: string };
+
+export const REQUIREMENT_TAGS: SkillTag[] = [
+  { value: "required", label: "Exigida", activeClassName: "bg-primary text-primary-foreground" },
+  { value: "desired", label: "Desejável", activeClassName: "bg-secondary text-secondary-foreground" },
+];
+
+export const LEVEL_TAGS: SkillTag[] = [
+  { value: "basic", label: "Básico", activeClassName: "bg-secondary text-secondary-foreground" },
+  { value: "intermediate", label: "Intermediário", activeClassName: "bg-secondary text-secondary-foreground" },
+  { value: "advanced", label: "Avançado", activeClassName: "bg-primary text-primary-foreground" },
+];
 
 const normalize = (value: string) => value.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
 
@@ -14,10 +26,14 @@ export function SkillPicker({
   catalog,
   value,
   onChange,
+  tags,
+  defaultTag,
 }: {
   catalog: SkillOption[];
   value: SelectedSkill[];
   onChange: (value: SelectedSkill[]) => void;
+  tags: SkillTag[];
+  defaultTag: string;
 }) {
   const [query, setQuery] = useState("");
   const names = useMemo(() => new Map(catalog.map((skill) => [skill.id, skill.name])), [catalog]);
@@ -33,24 +49,19 @@ export function SkillPicker({
           {value.map((skill) => (
             <li key={skill.skill_id} className="flex items-center justify-between gap-2 rounded-lg border px-3 py-2">
               <span className="text-sm font-semibold">{names.get(skill.skill_id)}</span>
-              <span className="flex items-center gap-1">
-                {(["required", "desired"] as const).map((requirement) => (
+              <span className="flex flex-wrap items-center justify-end gap-1">
+                {tags.map((tag) => (
                   <button
-                    key={requirement}
+                    key={tag.value}
                     type="button"
-                    onClick={() =>
-                      onChange(value.map((s) => (s.skill_id === skill.skill_id ? { ...s, requirement } : s)))
-                    }
+                    aria-pressed={skill.tag === tag.value}
+                    onClick={() => onChange(value.map((s) => (s.skill_id === skill.skill_id ? { ...s, tag: tag.value } : s)))}
                     className={cn(
                       "rounded-full px-2.5 py-1 text-xs font-bold",
-                      skill.requirement === requirement
-                        ? requirement === "required"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-secondary text-secondary-foreground"
-                        : "bg-muted text-muted-foreground",
+                      skill.tag === tag.value ? tag.activeClassName : "bg-muted text-muted-foreground",
                     )}
                   >
-                    {requirement === "required" ? "Exigida" : "Desejável"}
+                    {tag.label}
                   </button>
                 ))}
                 <button
@@ -73,7 +84,7 @@ export function SkillPicker({
             key={skill.id}
             type="button"
             onClick={() => {
-              onChange([...value, { skill_id: skill.id, requirement: "required" }]);
+              onChange([...value, { skill_id: skill.id, tag: defaultTag }]);
               setQuery("");
             }}
             className="inline-flex items-center gap-1 rounded-full border px-3 py-1 text-sm hover:border-primary hover:text-primary"

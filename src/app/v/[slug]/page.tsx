@@ -49,7 +49,7 @@ export default async function PublicJobPage({ params, searchParams }: PageProps<
           {job.closes_at && ` · inscrições até ${formatDate(job.closes_at)}`}
         </p>
         <Button asChild size="lg">
-          <Link href={`${jobPath(job.slug)}/candidatar`}>
+          <Link href={`${jobPath(job.slug)}/candidatar${typeof origem === "string" ? `?origem=${encodeURIComponent(origem)}` : ""}`}>
             <Send /> Quero me candidatar
           </Link>
         </Button>

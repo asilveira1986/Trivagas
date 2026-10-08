@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
+import { dispatchNotificationsSafely } from "@/lib/notifications/dispatch";
 import { createClient } from "@/lib/supabase/server";
 
 export type ModerationState = { error?: string };
@@ -36,6 +38,7 @@ export async function moderateJob(jobId: string, _: ModerationState, formData: F
     };
   }
 
+  after(dispatchNotificationsSafely);
   revalidatePath("/admin", "layout");
   redirect(`/admin/vagas?decidida=${parsed.data.decision}`);
 }
@@ -61,6 +64,7 @@ export async function reviewCompany(companyId: string, _: ModerationState, formD
     .eq("id", companyId);
   if (error) return { error: "Não foi possível salvar a decisão." };
 
+  after(dispatchNotificationsSafely);
   revalidatePath("/admin", "layout");
   redirect(`/admin/empresas?decidida=${parsed.data.status}`);
 }

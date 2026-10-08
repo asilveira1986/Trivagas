@@ -130,6 +130,11 @@ export default async function CompanyJobPage({ params, searchParams }: PageProps
               <strong className="font-heading text-2xl font-black">{totalViews}</strong> visualizações ·{" "}
               <strong className="font-heading text-2xl font-black">{applications ?? 0}</strong> candidaturas
             </p>
+            {(applications ?? 0) > 0 && (
+              <Button asChild size="sm" className="w-fit">
+                <Link href={`/empresa/candidatos?vaga=${job.id}`}>Ver candidatos</Link>
+              </Button>
+            )}
             {viewRows.length > 0 && (
               <ul className="flex flex-col gap-1 text-sm">
                 {viewRows.map((row) => (

@@ -2,7 +2,7 @@
 
 Portal de anúncio de vagas: a empresa cadastra a vaga, compartilha um link público e acompanha as candidaturas; os currículos formam um banco de talentos consultado por região e aderência. Escopo completo em [`docs/escopo.md`](docs/escopo.md).
 
-**Situação:** Fases 0 (Fundação) e 1 (Empresa e vagas) concluídas no código. Falta criar os projetos Supabase/Vercel e publicar (passo a passo abaixo).
+**Situação:** Fases 0 (Fundação), 1 (Empresa e vagas) e 2 (Candidato e candidatura) concluídas no código. Falta criar os projetos Supabase/Vercel e publicar (passo a passo abaixo).
 
 ## Stack
 
@@ -59,7 +59,15 @@ scripts/
 - **Visualizações por origem** (WhatsApp, LinkedIn, Facebook, QR Code, link copiado, página da empresa), exibidas por vaga.
 - **Avisos por e-mail enfileirados** em `notifications` (decisão de moderação, aprovação/reprovação da empresa e encerramento em 3 dias); o envio entra na Fase 2.
 - **Agendamentos com pg_cron** criados pela migração no Supabase: encerramento de vagas vencidas (00h05) e aviso prévio de encerramento (9h), horário de Brasília.
-- O botão "Quero me candidatar" leva a uma página provisória; o fluxo de candidatura é da Fase 2.
+
+## O que a Fase 2 entrega
+
+- **Currículo estruturado** (`/candidato/curriculo`): dados pessoais, título, objetivo, área, escolaridade, pretensão, raio de busca, experiências, formação e cursos, habilidades com nível e idiomas — salvo numa transação (`save_resume`). Tempo total de experiência calculado no banco sem contar períodos sobrepostos duas vezes.
+- **PDF do currículo** enviado direto do navegador para a área privada do Storage (até 5 MB; não passa pelo servidor, que na Vercel limita requisições a 4,5 MB). Empresas abrem por link temporário de 10 minutos.
+- **Candidatura em poucos passos** (`/v/<slug>/candidatar`): visitante cria a conta e volta para a vaga; o candidato confere os dados, anexa o PDF se quiser, responde às perguntas de triagem e autoriza o envio do currículo à empresa (consentimento registrado por vaga). Tudo numa transação (`apply_to_job`), com validação das respostas obrigatórias e bloqueio de candidatura duplicada; a origem do link (WhatsApp, QR Code…) é guardada.
+- **Acompanhamento** (`/candidato/candidaturas`) com etapa em linguagem do candidato e opção de desistir; painel do candidato com o quanto falta para completar o currículo.
+- **Funil da empresa** (`/empresa/candidatos`): filtro por vaga e etapa com contagens; ficha do candidato com contato (e atalho para WhatsApp), respostas, currículo, PDF, mudança de etapa, nota de 1 a 5 e anotações internas. Cada abertura de currículo fica em `audit_log` (LGPD).
+- **E-mails** via Resend: nova candidatura (para a equipe da empresa), confirmação de candidatura e mudança para entrevista/aprovado/reprovado (para o candidato), além dos avisos da Fase 1. O envio acontece logo após cada ação; uma rotina diária (`vercel.json` → `/api/notificacoes`) envia o que restou e refaz falhas (até 5 tentativas, sem duplicar o e-mail).
 
 ## Rodando localmente
 
@@ -97,8 +105,8 @@ O CI do GitHub (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull re
 5. **Auth → Email Templates** (recomendado) — para o link funcionar mesmo se aberto em outro aparelho, use no modelo *Confirm signup*:
    `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/painel`
    e no *Magic Link*: `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=magiclink&next=/painel`.
-6. **SMTP** — configure um serviço de envio (ex.: Resend) em *Auth → SMTP Settings*; o envio padrão do Supabase tem limite baixo.
-7. **Vercel** — importe o repositório, defina `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` e `NEXT_PUBLIC_SITE_URL` em *Production* (projeto de produção) e *Preview* (projeto de desenvolvimento).
+6. **E-mail (Resend)** — crie a conta, verifique o domínio de envio e gere uma API key. Use o mesmo Resend em *Auth → SMTP Settings* do Supabase (o envio padrão do Supabase tem limite baixo).
+7. **Vercel** — importe o repositório e defina as variáveis de `.env.example` em *Production* (projeto de produção) e *Preview* (projeto de desenvolvimento): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL`, e só no servidor `SUPABASE_SECRET_KEY`, `RESEND_API_KEY`, `EMAIL_FROM` e `CRON_SECRET`. Sem as variáveis de e-mail, os avisos ficam guardados na fila até serem configuradas.
 8. **Primeiro administrador** — cadastre-se pelo site e, no *SQL Editor* do Supabase, rode:
    ```sql
    update public.profiles
@@ -107,6 +115,8 @@ O CI do GitHub (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull re
    ```
 
 **Critério de conclusão da Fase 0:** em produção, cadastrar um candidato, uma empresa e o admin, e entrar em cada área.
+
+**Critério de conclusão da Fase 2:** um candidato chega pelo link da vaga, cria a conta, se candidata respondendo às perguntas; a empresa recebe o e-mail, abre a ficha e move o candidato para entrevista; o candidato recebe o e-mail e vê a etapa na área dele.
 
 **Critério de conclusão da Fase 1:** empresa cadastra os dados e uma vaga, o admin aprova ambos e o link `/v/<slug>` abre com prévia ao ser colado no WhatsApp (para a prévia funcionar, o site precisa estar num endereço público, como o da Vercel).
 
@@ -119,4 +129,4 @@ O CI do GitHub (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull re
 
 ## Próxima fase
 
-Fase 2 — Candidato e candidatura: currículo estruturado, envio do PDF, candidatura pelo link com respostas às perguntas de triagem, funil de candidatos na área da empresa e envio dos e-mails enfileirados em `notifications`.
+Fase 3 — Banco de currículos: autorização, pausa e retirada do currículo do banco de talentos, sugestão de currículos por região e aderência para cada vaga, busca com filtros e raio, convites (contato liberado só no aceite) e favoritos.

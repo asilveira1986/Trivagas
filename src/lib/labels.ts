@@ -87,3 +87,45 @@ export type EducationLevel = keyof typeof EDUCATION_LEVELS;
 export type RegionMode = keyof typeof REGION_MODES;
 export type QuestionType = keyof typeof QUESTION_TYPES;
 export type ModerationDecision = keyof typeof MODERATION_DECISIONS;
+
+// Etapas do funil como a empresa vê
+export const APPLICATION_STAGES = {
+  new: "Novo",
+  reviewing: "Em análise",
+  interview: "Entrevista",
+  approved: "Aprovado",
+  rejected: "Reprovado",
+} as const;
+
+// Etapas como o candidato vê (sem expor a triagem interna)
+export const CANDIDATE_STAGES = {
+  new: "Recebida",
+  reviewing: "Em análise",
+  interview: "Entrevista",
+  approved: "Aprovado(a)",
+  rejected: "Não selecionado(a)",
+} as const;
+
+export const SKILL_LEVELS = {
+  basic: "Básico",
+  intermediate: "Intermediário",
+  advanced: "Avançado",
+} as const;
+
+export const LANGUAGE_LEVELS = {
+  basic: "Básico",
+  intermediate: "Intermediário",
+  advanced: "Avançado",
+  fluent: "Fluente",
+} as const;
+
+export const APPLICATION_SOURCES = {
+  link: "Link da vaga",
+  search: "Busca",
+  invite: "Convite",
+} as const;
+
+export type ApplicationStage = keyof typeof APPLICATION_STAGES;
+export type SkillLevel = keyof typeof SKILL_LEVELS;
+export type LanguageLevel = keyof typeof LANGUAGE_LEVELS;
+export type ApplicationSource = keyof typeof APPLICATION_SOURCES;

@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth";
 const NAV = [
   { href: "/empresa", label: "Início" },
   { href: "/empresa/vagas", label: "Vagas" },
+  { href: "/empresa/candidatos", label: "Candidatos" },
   { href: "/empresa/dados", label: "Dados da empresa" },
   { href: "/empresa/usuarios", label: "Usuários" },
 ];
