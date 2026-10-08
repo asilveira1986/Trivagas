@@ -129,3 +129,19 @@ export type ApplicationStage = keyof typeof APPLICATION_STAGES;
 export type SkillLevel = keyof typeof SKILL_LEVELS;
 export type LanguageLevel = keyof typeof LANGUAGE_LEVELS;
 export type ApplicationSource = keyof typeof APPLICATION_SOURCES;
+
+export const TALENT_POOL_STATUSES = {
+  none: "Fora do banco de talentos",
+  active: "No banco de talentos",
+  paused: "Pausado",
+} as const;
+
+export const INVITE_STATUSES = {
+  pending: "Convite enviado",
+  accepted: "Convite aceito",
+  declined: "Convite recusado",
+  expired: "Convite expirado",
+} as const;
+
+export type TalentPoolStatus = keyof typeof TALENT_POOL_STATUSES;
+export type InviteStatus = keyof typeof INVITE_STATUSES;

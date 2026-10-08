@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Building2, MapPin, Share2, UserRound } from "lucide-react";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 const steps = [
@@ -20,9 +21,15 @@ const steps = [
   },
 ];
 
-export default function Home() {
+export default async function Home({ searchParams }: PageProps<"/">) {
+  const { conta } = await searchParams;
   return (
     <>
+      {conta === "excluida" && (
+        <div className="mx-auto w-full max-w-6xl px-4 pt-6">
+          <Alert variant="success">Sua conta e seus dados foram excluídos do Trivagas.</Alert>
+        </div>
+      )}
       <section className="bg-gradient-to-b from-primary/10 to-background">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-14 sm:py-20">
           <span className="w-fit rounded-full bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wide text-accent-foreground">

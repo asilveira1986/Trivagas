@@ -65,12 +65,13 @@ export default async function ApplyPage({ params, searchParams }: PageProps<"/v/
   }
 
   const supabase = await createClient();
-  const [{ data: existing }, resume, { data: city }] = await Promise.all([
+  const [{ data: existing }, resume, { data: city }, { data: invite }] = await Promise.all([
     supabase.from("applications").select("id, stage").eq("job_id", job.id).maybeSingle<{ id: string; stage: ApplicationStage }>(),
     getMyResume(),
     profile.city_id
       ? supabase.from("cities").select("name, states(uf)").eq("id", profile.city_id).maybeSingle<{ name: string; states: { uf: string } | null }>()
       : Promise.resolve({ data: null }),
+    supabase.from("talent_invites").select("message").eq("job_id", job.id).eq("status", "pending").maybeSingle<{ message: string | null }>(),
   ]);
 
   if (existing) {
@@ -93,6 +94,14 @@ export default async function ApplyPage({ params, searchParams }: PageProps<"/v/
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-4 py-8">
       {header}
+
+      {invite && (
+        <Alert variant="success">
+          <strong>{job.companies?.trade_name} convidou você para esta vaga.</strong> Ao enviar a candidatura, você aceita o
+          convite e seus contatos são liberados para a empresa.
+          {invite.message && <span className="mt-1 block">“{invite.message}”</span>}
+        </Alert>
+      )}
 
       <section className="flex flex-col gap-3 rounded-xl border p-4">
         <div className="flex items-center justify-between gap-2">

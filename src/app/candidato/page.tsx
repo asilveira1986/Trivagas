@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, Circle } from "lucide-react";
-import { ComingSoonCard } from "@/components/layout/area-shell";
+import { Badge } from "@/components/ui/badge";
 import { StageBadge } from "@/components/status-stage";
 import { Button } from "@/components/ui/button";
-import type { ApplicationStage } from "@/lib/labels";
+import { TALENT_POOL_STATUSES, type ApplicationStage } from "@/lib/labels";
 import { getMyResume, resumeChecklist } from "@/lib/resume";
 import { createClient } from "@/lib/supabase/server";
 
@@ -72,11 +72,22 @@ export default async function CandidateHome() {
         </Link>
       </section>
 
-      <ComingSoonCard
-        title="Banco de talentos"
-        text="Autorize, pause ou retire seu currículo da busca das empresas e receba convites para vagas."
-        phase="Fase 3"
-      />
+      <section className="flex flex-col gap-3 rounded-xl border p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-extrabold">Banco de talentos</h2>
+          <Badge variant={resume?.talent_pool_status === "active" ? "success" : "default"}>
+            {TALENT_POOL_STATUSES[resume?.talent_pool_status ?? "none"]}
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {resume?.talent_pool_status === "active"
+            ? "Empresas da sua região podem encontrar seu perfil e convidar você para vagas."
+            : "Participe para receber convites de empresas da sua região, sem precisar procurar cada vaga."}
+        </p>
+        <Link href="/candidato/privacidade" className="text-sm font-semibold text-primary hover:underline">
+          {resume?.talent_pool_status === "active" ? "Gerenciar participação" : "Quero participar"}
+        </Link>
+      </section>
     </div>
   );
 }

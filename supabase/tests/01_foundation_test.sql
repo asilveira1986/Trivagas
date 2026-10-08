@@ -329,8 +329,8 @@ select test.check(
   'contato do banco de talentos fica oculto até o aceite'
 );
 select test.check(
-  (select count(*) from storage.objects where bucket_id = 'resumes') = 1,
-  'PDF de currículo autorizado no banco pode ser aberto pela empresa aprovada'
+  (select count(*) from storage.objects where bucket_id = 'resumes') = 0,
+  'PDF (que traz contatos) não abre pelo banco de talentos, só após candidatura ou aceite'
 );
 select test.check((select count(*) from public.applications) = 0, 'empresa 2 não vê candidaturas da empresa 1');
 select test.expect_error(

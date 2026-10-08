@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { getCurrentProfile } from "@/lib/auth";
-import type { EducationLevel, LanguageLevel, SkillLevel } from "@/lib/labels";
+import type { EducationLevel, LanguageLevel, SkillLevel, TalentPoolStatus } from "@/lib/labels";
 import { createClient } from "@/lib/supabase/server";
 
 export type ResumeDetail = {
@@ -16,6 +16,7 @@ export type ResumeDetail = {
   languages: { language: string; level: LanguageLevel }[];
   pdf_path: string | null;
   search_radius_km: number;
+  talent_pool_status: TalentPoolStatus;
   updated_at: string;
   cities: { name: string; states: { uf: string } | null } | null;
   areas: { name: string } | null;
@@ -43,7 +44,7 @@ export type ResumeDetail = {
 
 export const RESUME_COLUMNS = `
   id, profile_id, headline, objective, city_id, area_id, education_level, desired_salary, languages, pdf_path,
-  search_radius_km, updated_at,
+  search_radius_km, talent_pool_status, updated_at,
   cities(name, states(uf)),
   areas(name),
   resume_experiences(id, company_name, role_title, started_on, ended_on, is_current, activities),

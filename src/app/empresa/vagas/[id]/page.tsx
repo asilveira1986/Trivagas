@@ -101,6 +101,9 @@ export default async function CompanyJobPage({ params, searchParams }: PageProps
                 {jobUrl(job.slug).replace(/^https?:\/\//, "")} <ExternalLink className="size-3.5 shrink-0" />
               </Link>
               <ShareButtons url={jobUrl(job.slug)} text={`Vaga: ${job.title} – ${company.trade_name}`} />
+              <Button asChild size="sm" variant="secondary" className="w-fit">
+                <Link href={`/empresa/talentos?vaga=${job.id}`}>Ver currículos sugeridos</Link>
+              </Button>
               <div className="flex flex-col items-center gap-2 rounded-lg bg-muted p-3">
                 <Image
                   src={`${jobPath(job.slug)}/qrcode?formato=svg`}

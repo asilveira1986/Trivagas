@@ -2,7 +2,7 @@
 
 Portal de anúncio de vagas: a empresa cadastra a vaga, compartilha um link público e acompanha as candidaturas; os currículos formam um banco de talentos consultado por região e aderência. Escopo completo em [`docs/escopo.md`](docs/escopo.md).
 
-**Situação:** Fases 0 (Fundação), 1 (Empresa e vagas) e 2 (Candidato e candidatura) concluídas no código. Falta criar os projetos Supabase/Vercel e publicar (passo a passo abaixo).
+**Situação:** Fases 0 (Fundação), 1 (Empresa e vagas), 2 (Candidato e candidatura) e 3 (Banco de currículos) concluídas no código. Falta criar os projetos Supabase/Vercel e publicar (passo a passo abaixo).
 
 ## Stack
 
@@ -69,6 +69,19 @@ scripts/
 - **Funil da empresa** (`/empresa/candidatos`): filtro por vaga e etapa com contagens; ficha do candidato com contato (e atalho para WhatsApp), respostas, currículo, PDF, mudança de etapa, nota de 1 a 5 e anotações internas. Cada abertura de currículo fica em `audit_log` (LGPD).
 - **E-mails** via Resend: nova candidatura (para a equipe da empresa), confirmação de candidatura e mudança para entrevista/aprovado/reprovado (para o candidato), além dos avisos da Fase 1. O envio acontece logo após cada ação; uma rotina diária (`vercel.json` → `/api/notificacoes`) envia o que restou e refaz falhas (até 5 tentativas, sem duplicar o e-mail).
 
+## O que a Fase 3 entrega
+
+- **Consentimento do banco de talentos** (`/candidato/privacidade`): o candidato autoriza (com versão do termo registrada), pausa ou retira o currículo a qualquer momento; autorização e retirada ficam no histórico de consentimentos.
+- **Sugestão de currículos por vaga e busca manual** (`/empresa/talentos`), numa única função do banco (`talent_search`), liberada só para empresas aprovadas:
+  - ordem por **faixa de proximidade** — mesma cidade, dentro do raio, mesmo estado, resto do país (sem cidade por último); vaga remota ignora a região; no modo **restringir** só aparecem a cidade e o raio;
+  - dentro de cada faixa, pela **aderência** (%): habilidades exigidas e desejáveis, área, experiência e escolaridade, com **pesos lidos de `app_settings`** (ajustáveis pelo admin sem nova versão) e só sobre os critérios que a vaga define;
+  - cada resultado explica o que pesou (ex.: "1 de 2 habilidades exigidas", área, experiência, escolaridade, habilidades em comum);
+  - filtros por cidade e raio, área, habilidades (todas), escolaridade, experiência mínima e palavras-chave (sem acentos), com paginação.
+- **Privacidade no banco**: a empresa vê o perfil profissional com **nome abreviado** ("Ana F."); nome completo, telefone, e-mail e **PDF** só depois da candidatura ou do aceite do convite (regra no banco e no Storage). Cada abertura de perfil vai para `audit_log`.
+- **Convites**: a empresa convida para uma vaga publicada com mensagem; o candidato recebe e-mail, vê o convite em "Candidaturas" e aceita pelo fluxo de candidatura (respondendo às perguntas de triagem) ou recusa. Aceite vira candidatura com origem "convite".
+- **Favoritos e listas** da empresa (`/empresa/talentos/salvos`), compartilhados entre os usuários.
+- **LGPD do candidato**: baixar todos os dados em JSON e excluir a conta definitivamente (remove PDF, usuário do Auth e, em cascata, currículo, candidaturas e consentimentos — exige `SUPABASE_SECRET_KEY`).
+
 ## Rodando localmente
 
 Requisitos: Node 20.9+ e um projeto Supabase (pode ser o de desenvolvimento).
@@ -116,6 +129,8 @@ O CI do GitHub (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull re
 
 **Critério de conclusão da Fase 0:** em produção, cadastrar um candidato, uma empresa e o admin, e entrar em cada área.
 
+**Critério de conclusão da Fase 3:** com candidatos no banco de talentos em cidades diferentes, a vaga publicada mostra os currículos na ordem mesma cidade → dentro do raio → mesmo estado → demais regiões, e por aderência dentro de cada faixa; o convite aceito libera o contato.
+
 **Critério de conclusão da Fase 2:** um candidato chega pelo link da vaga, cria a conta, se candidata respondendo às perguntas; a empresa recebe o e-mail, abre a ficha e move o candidato para entrevista; o candidato recebe o e-mail e vê a etapa na área dele.
 
 **Critério de conclusão da Fase 1:** empresa cadastra os dados e uma vaga, o admin aprova ambos e o link `/v/<slug>` abre com prévia ao ser colado no WhatsApp (para a prévia funcionar, o site precisa estar num endereço público, como o da Vercel).
@@ -129,4 +144,4 @@ O CI do GitHub (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull re
 
 ## Próxima fase
 
-Fase 3 — Banco de currículos: autorização, pausa e retirada do currículo do banco de talentos, sugestão de currículos por região e aderência para cada vaga, busca com filtros e raio, convites (contato liberado só no aceite) e favoritos.
+Fase 4 — Lançamento nacional: painel administrativo com métricas (inclui tempo médio de moderação), gestão de catálogos e pesos de aderência pela tela, busca pública de vagas com filtros e raio, sitemap e SEO, denúncias de vagas, retenção automática de currículos inativos (aviso e remoção após 6 meses), proteção contra cadastro automatizado, textos finais dos termos e da política, testes e ajustes.

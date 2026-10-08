@@ -83,6 +83,17 @@ const RENDERERS: Record<string, (p: Payload) => Email | null> = {
       action: { label: "Acompanhar candidaturas", path: "/candidato/candidaturas" },
     }),
 
+  talent_invite: (p) =>
+    layout({
+      subject: `${p.company_name} convidou você para a vaga "${p.job_title}"`,
+      paragraphs: [
+        `${p.company_name} encontrou seu currículo no banco de talentos do Trivagas e convidou você para participar da seleção.`,
+        ...(p.message ? [`Mensagem da empresa: “${p.message}”`] : []),
+        "Seu telefone e e-mail só são enviados à empresa se você aceitar o convite.",
+      ],
+      action: { label: "Ver convite", path: "/candidato/candidaturas" },
+    }),
+
   application_stage_changed: (p) => {
     const messages: Record<string, [string, string]> = {
       interview: [`Você foi selecionado(a) para entrevista`, `${p.company_name} quer conversar com você sobre a vaga ${p.job_title}. Fique atento(a) ao seu telefone e e-mail.`],
