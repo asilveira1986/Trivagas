@@ -215,7 +215,7 @@ select id, 'approved' from public.jobs where title = 'Auxiliar Administrativo Pl
 -- ---------------------------------------------------------------------------
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000e2', false);
 insert into public.companies (cnpj, legal_name, trade_name, city_id)
-values ('44555666000199', 'Empresa Dois SA', 'Empresa Dois', 3509502);
+values ('44555666000181', 'Empresa Dois SA', 'Empresa Dois', 3509502);
 select test.check(
   (select count(*) from public.jobs) = 1,
   'empresa 2 vê só a vaga publicada da empresa 1, sem o rascunho'
@@ -227,7 +227,7 @@ select test.check(
 );
 select test.check((select count(*) from public.job_views) = 0, 'empresa 2 não vê visualizações da empresa 1');
 insert into public.jobs (company_id, title, city_id, status)
-select id, 'Vendedor', 3509502, 'in_review' from public.companies where cnpj = '44555666000199';
+select id, 'Vendedor', 3509502, 'in_review' from public.companies where cnpj = '44555666000181';
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false);
 select test.expect_error(
   $$insert into public.job_moderation (job_id, decision) select id, 'approved' from public.jobs where title = 'Vendedor'$$,
@@ -312,7 +312,7 @@ select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000e2
 select test.check((select count(*) from public.resumes) = 0, 'empresa pendente não acessa o banco de talentos');
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false);
-update public.companies set status = 'approved' where cnpj = '44555666000199';
+update public.companies set status = 'approved' where cnpj = '44555666000181';
 insert into public.job_moderation (job_id, decision) select id, 'approved' from public.jobs where title = 'Vendedor';
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000c2', false);
@@ -339,7 +339,7 @@ select test.expect_error(
 insert into public.talent_invites (job_id, resume_id, message)
 select j.id, r.id, 'Venha conversar' from public.jobs j, public.resumes r where j.title = 'Vendedor';
 insert into public.saved_resumes (company_id, resume_id)
-select c.id, r.id from public.companies c, public.resumes r where c.cnpj = '44555666000199';
+select c.id, r.id from public.companies c, public.resumes r where c.cnpj = '44555666000181';
 
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-0000000000c1', false);
 select test.check((select count(*) from public.talent_invites) = 1, 'candidata vê o convite');

@@ -11,11 +11,13 @@ import { TermsCheckbox } from "@/components/forms/terms-checkbox";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { usePreservingSubmit } from "@/hooks/use-preserving-submit";
 import { signUp, type SignupState } from "./actions";
 
-export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
+export function SignupForm({ initialRole, next }: { initialRole: SignupRole; next: string }) {
   const [role, setRole] = useState<SignupRole>(initialRole);
   const [state, action, pending] = useActionState<SignupState, FormData>(signUp, {});
+  const onSubmit = usePreservingSubmit(action);
   const errors = state.fieldErrors ?? {};
   const values = state.values ?? {};
 
@@ -37,7 +39,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
       <RolePicker value={role} onChange={setRole} />
 
       <GoogleButton
-        next={`/boas-vindas?perfil=${role === "company" ? "empresa" : "candidato"}`}
+        next={`/boas-vindas?perfil=${role === "company" ? "empresa" : "candidato"}&next=${encodeURIComponent(next)}`}
         label="Cadastrar com Google"
       />
 
@@ -47,8 +49,9 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
 
       {state.error && <Alert variant="destructive">{state.error}</Alert>}
 
-      <form action={action} className="flex flex-col gap-4" noValidate>
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         <input type="hidden" name="role" value={role} />
+        <input type="hidden" name="next" value={next} />
         <Field id="fullName" label={role === "company" ? "Seu nome (responsável)" : "Nome completo"} errors={errors.fullName}>
           <Input id="fullName" name="fullName" autoComplete="name" required defaultValue={values.fullName} aria-invalid={!!errors.fullName} />
         </Field>
@@ -82,7 +85,7 @@ export function SignupForm({ initialRole }: { initialRole: SignupRole }) {
 
       <p className="text-center text-sm text-muted-foreground">
         Já tem conta?{" "}
-        <Link href="/entrar" className="font-semibold text-primary hover:underline">
+        <Link href={`/entrar?next=${encodeURIComponent(next)}`} className="font-semibold text-primary hover:underline">
           Entrar
         </Link>
       </p>

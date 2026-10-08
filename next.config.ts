@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  experimental: {
+    // Logotipo da empresa (até 1 MB) enviado por Server Action, com folga para o multipart.
+    serverActions: { bodySizeLimit: "1.2mb" },
+  },
   turbopack: {
     rules: {
       "*.css": {

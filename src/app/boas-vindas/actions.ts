@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal";
+import { safeNextPath } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import { onboardingSchema, type FieldErrors } from "@/lib/validation/auth";
 
@@ -31,5 +32,5 @@ export async function completeOnboarding(_: OnboardingState, formData: FormData)
   if (error && !error.message.includes("já concluído")) {
     return { error: "Não foi possível concluir o cadastro. Tente novamente." };
   }
-  redirect("/painel");
+  redirect(safeNextPath(String(formData.get("next") ?? "")));
 }

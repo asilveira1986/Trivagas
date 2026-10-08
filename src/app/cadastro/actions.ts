@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { siteUrl } from "@/lib/env";
+import { safeNextPath } from "@/lib/roles";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
 import { signupSchema, type FieldErrors } from "@/lib/validation/auth";
@@ -19,6 +20,7 @@ export async function signUp(_: SignupState, formData: FormData): Promise<Signup
   // Valores devolvidos ao formulário em caso de erro (nunca a senha).
   const values = { ...raw };
   delete values.password;
+  const next = safeNextPath(raw.next);
   const parsed = signupSchema.safeParse(raw);
   if (!parsed.success) {
     const fieldErrors: FieldErrors = {};
@@ -37,7 +39,7 @@ export async function signUp(_: SignupState, formData: FormData): Promise<Signup
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/painel`,
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
       data: {
         full_name: fullName,
         role,
@@ -60,7 +62,7 @@ export async function signUp(_: SignupState, formData: FormData): Promise<Signup
   }
 
   // Com confirmação de e-mail desativada, a sessão já vem pronta.
-  if (data.session) redirect("/painel");
+  if (data.session) redirect(next);
 
   return { sentTo: email };
 }

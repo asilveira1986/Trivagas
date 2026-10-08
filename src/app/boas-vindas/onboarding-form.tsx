@@ -8,17 +8,28 @@ import { TermsCheckbox } from "@/components/forms/terms-checkbox";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { usePreservingSubmit } from "@/hooks/use-preserving-submit";
 import { completeOnboarding, type OnboardingState } from "./actions";
 
-export function OnboardingForm({ initialRole, defaultName }: { initialRole: SignupRole; defaultName: string }) {
+export function OnboardingForm({
+  initialRole,
+  defaultName,
+  next,
+}: {
+  initialRole: SignupRole;
+  defaultName: string;
+  next: string;
+}) {
   const [role, setRole] = useState<SignupRole>(initialRole);
   const [state, action, pending] = useActionState<OnboardingState, FormData>(completeOnboarding, {});
+  const onSubmit = usePreservingSubmit(action);
   const errors = state.fieldErrors ?? {};
 
   return (
-    <form action={action} className="flex flex-col gap-4" noValidate>
+    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       <RolePicker value={role} onChange={setRole} />
       <input type="hidden" name="role" value={role} />
+      <input type="hidden" name="next" value={next} />
       {state.error && <Alert variant="destructive">{state.error}</Alert>}
       <Field id="fullName" label={role === "company" ? "Seu nome (responsável)" : "Nome completo"} errors={errors.fullName}>
         <Input id="fullName" name="fullName" autoComplete="name" required defaultValue={defaultName} aria-invalid={!!errors.fullName} />

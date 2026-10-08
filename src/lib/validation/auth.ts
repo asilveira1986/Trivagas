@@ -18,4 +18,4 @@ export const signupSchema = z.object({
 
 export const onboardingSchema = signupSchema.pick({ role: true, fullName: true, cityId: true, phone: true, acceptTerms: true });
 
-export type FieldErrors = Partial<Record<string, string[]>>;
+export type { FieldErrors } from "@/lib/validation/common";

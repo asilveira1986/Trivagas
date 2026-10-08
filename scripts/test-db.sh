@@ -18,4 +18,7 @@ for migration in "$ROOT"/supabase/migrations/*.sql; do
   echo "→ $(basename "$migration")"
   "${PSQL[@]}" "$TEST_URL" -f "$migration"
 done
-"${PSQL[@]}" "$TEST_URL" -o /dev/null -f "$ROOT/supabase/tests/rls_test.sql" 2>&1 | sed -E "s/^psql:[^ ]+ (NOTICE: +)?//"
+for test in "$ROOT"/supabase/tests/*_test.sql; do
+  echo "→ $(basename "$test")"
+  "${PSQL[@]}" "$TEST_URL" -o /dev/null -f "$test" 2>&1 | sed -E "s/^psql:[^ ]+ (NOTICE: +)?//"
+done
