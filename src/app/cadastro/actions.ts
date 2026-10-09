@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { siteUrl } from "@/lib/env";
+import { verifyHuman, withinRateLimit } from "@/lib/protection";
 import { safeNextPath } from "@/lib/roles";
 import { PRIVACY_VERSION, TERMS_VERSION } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/server";
@@ -29,6 +30,13 @@ export async function signUp(_: SignupState, formData: FormData): Promise<Signup
       fieldErrors[key] = [...(fieldErrors[key] ?? []), issue.message];
     }
     return { fieldErrors, values };
+  }
+
+  if (!(await verifyHuman(formData))) {
+    return { error: "Confirme que você não é um robô e tente de novo.", values };
+  }
+  if (!(await withinRateLimit("signup", 5, 3600))) {
+    return { error: "Muitos cadastros a partir desta conexão. Tente novamente mais tarde.", values };
   }
 
   const { email, password, fullName, role, cityId, phone } = parsed.data;

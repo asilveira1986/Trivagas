@@ -183,7 +183,8 @@ select set_config('request.jwt.claim.sub', '', false);
 select test.check((select count(*) from public.jobs) = 1, 'visitante vê apenas a vaga publicada');
 select test.check((select count(*) from public.companies) = 1, 'visitante vê empresa aprovada');
 select public.register_job_view((select id from public.jobs limit 1), 'whatsapp', null);
-insert into public.job_reports (job_id, reason) select id, 'Parece golpe' from public.jobs limit 1;
+-- Denúncias passam pelo servidor (anti-robô e limite por IP); direto pela API é recusado.
+select test.expect_error($$insert into public.job_reports (job_id, reason) select id, 'Parece golpe' from public.jobs limit 1$$, 'row-level security');
 select test.check((select count(*) from public.job_reports) = 0, 'visitante não lê denúncias');
 select test.expect_error($$insert into public.job_views (job_id) select id from public.jobs limit 1$$);
 select test.expect_error($$select public.close_expired_jobs()$$, 'permission denied');
@@ -371,7 +372,7 @@ select test.check((select count(*) from public.resumes) = 1, 'candidatura manté
 -- Encerramento automático
 -- ---------------------------------------------------------------------------
 reset role;
-update public.jobs set closes_at = current_date - 1 where title = 'Vendedor';
+update public.jobs set closes_at = (now() at time zone 'America/Sao_Paulo')::date - 1 where title = 'Vendedor';
 select test.check(public.close_expired_jobs() = 1, 'vagas vencidas são encerradas');
 select test.check(
   (select status from public.jobs where title = 'Vendedor') = 'closed'

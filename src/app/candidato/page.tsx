@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, Circle } from "lucide-react";
+import { JobCard } from "@/components/jobs/job-card";
 import { Badge } from "@/components/ui/badge";
+import { requireRole } from "@/lib/auth";
+import { searchPublicJobs } from "@/lib/public-jobs";
 import { StageBadge } from "@/components/status-stage";
 import { Button } from "@/components/ui/button";
 import { TALENT_POOL_STATUSES, type ApplicationStage } from "@/lib/labels";
@@ -23,6 +26,21 @@ export default async function CandidateHome() {
       .limit(5)
       .overrideTypes<Row[], { merge: false }>(),
   ]);
+  const profile = await requireRole("candidate");
+  const nearby = profile.city_id
+    ? await searchPublicJobs(
+        {
+          query: null,
+          cityId: profile.city_id,
+          radiusKm: resume?.search_radius_km ?? null,
+          areaId: resume?.area_id ?? null,
+          mode: null,
+          contract: null,
+          page: 1,
+        },
+        4,
+      )
+    : [];
   const checklist = resumeChecklist(resume);
   const done = checklist.filter((item) => item.done).length;
   const percent = Math.round((done / checklist.length) * 100);
@@ -70,6 +88,26 @@ export default async function CandidateHome() {
         <Link href="/candidato/candidaturas" className="text-sm font-semibold text-primary hover:underline">
           Ver todas
         </Link>
+      </section>
+
+      <section className="flex flex-col gap-3 lg:col-span-2">
+        <div className="flex items-end justify-between gap-2">
+          <h2 className="text-lg font-extrabold">Vagas perto de você</h2>
+          <Link href="/vagas" className="text-sm font-semibold text-primary hover:underline">
+            Buscar vagas
+          </Link>
+        </div>
+        {nearby.length ? (
+          <ul className="grid gap-3 md:grid-cols-2">
+            {nearby.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </ul>
+        ) : (
+          <p className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
+            Nenhuma vaga na sua região {resume?.area_id ? "e área " : ""}agora. Veja todas em “Buscar vagas”.
+          </p>
+        )}
       </section>
 
       <section className="flex flex-col gap-3 rounded-xl border p-5">

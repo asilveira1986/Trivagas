@@ -1,7 +1,10 @@
 import Link from "next/link";
-import { Building2, MapPin, Share2, UserRound } from "lucide-react";
+import { Building2, MapPin, Search, Share2, UserRound } from "lucide-react";
+import { JobCard } from "@/components/jobs/job-card";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { searchPublicJobs } from "@/lib/public-jobs";
 
 const steps = [
   {
@@ -23,6 +26,10 @@ const steps = [
 
 export default async function Home({ searchParams }: PageProps<"/">) {
   const { conta } = await searchParams;
+  const recent = await searchPublicJobs(
+    { query: null, cityId: null, radiusKm: null, areaId: null, mode: null, contract: null, page: 1 },
+    6,
+  );
   return (
     <>
       {conta === "excluida" && (
@@ -42,8 +49,14 @@ export default async function Home({ searchParams }: PageProps<"/">) {
             Empresas publicam e compartilham vagas por link. Candidatos se candidatam em poucos passos, direto do
             celular.
           </p>
+          <form action="/vagas" className="flex max-w-xl gap-2">
+            <Input name="q" placeholder="Cargo ou palavra-chave" aria-label="Cargo ou palavra-chave" className="h-12 bg-background" />
+            <Button type="submit" size="lg">
+              <Search /> Buscar
+            </Button>
+          </form>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg">
+            <Button asChild size="lg" variant="outline">
               <Link href="/cadastro?perfil=candidato">
                 <UserRound /> Quero me candidatar
               </Link>
@@ -56,6 +69,22 @@ export default async function Home({ searchParams }: PageProps<"/">) {
           </div>
         </div>
       </section>
+
+      {recent.length > 0 && (
+        <section className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 pt-14">
+          <div className="flex items-end justify-between gap-3">
+            <h2 className="text-2xl font-black sm:text-3xl">Vagas recentes</h2>
+            <Link href="/vagas" className="text-sm font-semibold text-primary hover:underline">
+              Ver todas
+            </Link>
+          </div>
+          <ul className="grid gap-3 md:grid-cols-2">
+            {recent.map((job) => (
+              <JobCard key={job.id} job={job} />
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="mx-auto w-full max-w-6xl px-4 py-14">
         <h2 className="text-2xl font-black sm:text-3xl">Como funciona</h2>

@@ -13,10 +13,13 @@ export async function SiteHeader() {
           <TrivagasLogo />
         </Link>
         <nav className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/vagas">Vagas</Link>
+          </Button>
           {profile ? (
             <>
               <Button asChild variant="ghost" size="sm">
-                <Link href="/painel">Meu painel</Link>
+                <Link href="/painel">Painel</Link>
               </Button>
               <form action="/auth/sair" method="post">
                 <Button type="submit" variant="outline" size="sm">
@@ -29,7 +32,7 @@ export async function SiteHeader() {
               <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
                 <Link href="/cadastro?perfil=empresa">Anunciar vaga</Link>
               </Button>
-              <Button asChild variant="ghost" size="sm">
+              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
                 <Link href="/entrar">Entrar</Link>
               </Button>
               <Button asChild size="sm">

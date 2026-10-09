@@ -8,6 +8,7 @@ import { Field } from "@/components/forms/field";
 import { GoogleButton } from "@/components/forms/google-button";
 import { RolePicker, type SignupRole } from "@/components/forms/role-picker";
 import { TermsCheckbox } from "@/components/forms/terms-checkbox";
+import { Turnstile } from "@/components/forms/turnstile";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,6 +79,7 @@ export function SignupForm({ initialRole, next }: { initialRole: SignupRole; nex
           <Input id="password" name="password" type="password" autoComplete="new-password" minLength={8} required aria-invalid={!!errors.password} />
         </Field>
         <TermsCheckbox error={errors.acceptTerms?.[0]} />
+        <Turnstile />
         <Button type="submit" disabled={pending}>
           {pending ? "Criando conta…" : "Criar conta"}
         </Button>

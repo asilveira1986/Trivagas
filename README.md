@@ -2,7 +2,7 @@
 
 Portal de anúncio de vagas: a empresa cadastra a vaga, compartilha um link público e acompanha as candidaturas; os currículos formam um banco de talentos consultado por região e aderência. Escopo completo em [`docs/escopo.md`](docs/escopo.md).
 
-**Situação:** Fases 0 (Fundação), 1 (Empresa e vagas), 2 (Candidato e candidatura) e 3 (Banco de currículos) concluídas no código. Falta criar os projetos Supabase/Vercel e publicar (passo a passo abaixo).
+**Situação:** Fases 0 a 4 (Fundação, Empresa e vagas, Candidato e candidatura, Banco de currículos e Lançamento nacional) concluídas no código. Falta a implantação e a lista de verificação de lançamento abaixo. Falta criar os projetos Supabase/Vercel e publicar (passo a passo abaixo).
 
 ## Stack
 
@@ -82,6 +82,34 @@ scripts/
 - **Favoritos e listas** da empresa (`/empresa/talentos/salvos`), compartilhados entre os usuários.
 - **LGPD do candidato**: baixar todos os dados em JSON e excluir a conta definitivamente (remove PDF, usuário do Auth e, em cascata, currículo, candidaturas e consentimentos — exige `SUPABASE_SECRET_KEY`).
 
+## O que a Fase 4 entrega
+
+- **Busca pública de vagas** (`/vagas`, função `search_jobs`): palavra-chave (sem acentos), cidade com **raio ajustável** (mais próximas primeiro e, depois, as remotas, que valem para todo o Brasil), área, modalidade e contrato, com paginação. Para o candidato logado, a busca já começa pela cidade e pelo raio do currículo; a área do candidato mostra "Vagas perto de você". Página inicial com busca e vagas recentes.
+- **SEO**: `sitemap.xml` (vagas publicadas e empresas aprovadas, atualizado de hora em hora), `robots.txt` fechando as áreas logadas, metadados e dados estruturados de vaga (Google for Jobs).
+- **Denúncia de vaga** (`/v/<slug>/denunciar`) com motivos pré-definidos, anti-robô (Cloudflare Turnstile) e limite de 5 denúncias por hora por conexão; a gravação passa pelo servidor (a API pública não aceita mais inserção direta). O admin recebe um e-mail por vaga denunciada.
+- **Painel administrativo**:
+  - métricas (`admin_metrics`): empresas ativas e pendentes, vagas publicadas e em análise, candidaturas, cadastros, currículos no banco, visualizações, denúncias abertas e **tempo médio de moderação** (guardado em cada decisão);
+  - **denúncias** (`/admin/denuncias`): retirar a vaga do ar com motivo (resolve as denúncias abertas da vaga e avisa a empresa), resolver ou arquivar;
+  - **catálogos e pesos** (`/admin/catalogos`): áreas e habilidades (adicionar, desativar), pesos da aderência (somando 100), raio padrão e prazo de retenção — aplicados na hora;
+  - **usuários** (`/admin/usuarios`): busca por nome ou e-mail, filtro por perfil, bloqueio e desbloqueio.
+- **Retenção (LGPD)**: rotina diária (`/api/rotinas/retencao`) avisa por e-mail quem está há 5 meses sem acesso e, sem retorno em 25 dias, remove definitivamente a conta e o PDF ao completar 6 meses (prazo configurável). Entrar no portal cancela o aviso; a atividade é registrada no máximo a cada 12 horas.
+- **Proteção**: Turnstile no cadastro e na denúncia, limite de tentativas no cadastro (5/h) e no link por e-mail (5 a cada 15 min), cabeçalhos de segurança (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`).
+- **Textos legais**: termos de uso e política de privacidade completos como minuta (finalidades, compartilhamento, direitos, retenção, segurança, contato do encarregado lido de `app_settings.privacy_contact_email`) — **precisam de revisão jurídica**.
+- **Monitoramento**: Vercel Analytics e Speed Insights (ativos ao publicar na Vercel).
+
+## Lista de verificação de lançamento
+
+- [ ] Projetos Supabase (dev e produção) com as migrações aplicadas (`npx supabase db push`) e **backups diários** ativos (plano Pro: *Database → Backups*; considere PITR).
+- [ ] Primeiro administrador promovido por SQL (ver passo 8 abaixo).
+- [ ] Auth: URLs de retorno, Google e modelos de e-mail configurados; SMTP do Resend.
+- [ ] Vercel: todas as variáveis de `.env.example`, incluindo `NEXT_PUBLIC_TURNSTILE_SITE_KEY` e `TURNSTILE_SECRET_KEY` (crie o widget em *Cloudflare → Turnstile* com o domínio do site).
+- [ ] As duas rotinas do `vercel.json` aparecem em *Vercel → Settings → Cron Jobs* (`/api/notificacoes` e `/api/rotinas/retencao`).
+- [ ] `privacy_contact_email` em `app_settings` com o e-mail real do encarregado de dados.
+- [ ] Termos de uso e política de privacidade revisados por advogado; ao mudar o texto, atualizar a versão em `src/lib/legal.ts` e em `app_settings`.
+- [ ] Domínio definitivo apontado para a Vercel e `NEXT_PUBLIC_SITE_URL` atualizado; sitemap enviado ao Google Search Console.
+- [ ] Logotipo original em SVG no lugar do símbolo provisório (`src/components/brand/trivagas-mark.tsx` e `src/app/icon.svg`).
+- [ ] Teste de ponta a ponta em produção: empresa publica → vaga aprovada abre no WhatsApp → candidato se candidata → empresa avalia → convite do banco de talentos.
+
 ## Rodando localmente
 
 Requisitos: Node 20.9+ e um projeto Supabase (pode ser o de desenvolvimento).
@@ -129,6 +157,8 @@ O CI do GitHub (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull re
 
 **Critério de conclusão da Fase 0:** em produção, cadastrar um candidato, uma empresa e o admin, e entrar em cada área.
 
+**Critério de conclusão da Fase 4:** portal aberto para todo o Brasil, com a lista de verificação de lançamento concluída.
+
 **Critério de conclusão da Fase 3:** com candidatos no banco de talentos em cidades diferentes, a vaga publicada mostra os currículos na ordem mesma cidade → dentro do raio → mesmo estado → demais regiões, e por aderência dentro de cada faixa; o convite aceito libera o contato.
 
 **Critério de conclusão da Fase 2:** um candidato chega pelo link da vaga, cria a conta, se candidata respondendo às perguntas; a empresa recebe o e-mail, abre a ficha e move o candidato para entrevista; o candidato recebe o e-mail e vê a etapa na área dele.
@@ -142,6 +172,7 @@ O CI do GitHub (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull re
 - Versões dos termos ficam em `src/lib/legal.ts` e em `app_settings` (manter iguais).
 - Nunca expor a chave secreta (`service_role`) no navegador: só variáveis de servidor na Vercel.
 
-## Próxima fase
+## Próximas fases
 
-Fase 4 — Lançamento nacional: painel administrativo com métricas (inclui tempo médio de moderação), gestão de catálogos e pesos de aderência pela tela, busca pública de vagas com filtros e raio, sitemap e SEO, denúncias de vagas, retenção automática de currículos inativos (aviso e remoção após 6 meses), proteção contra cadastro automatizado, textos finais dos termos e da política, testes e ajustes.
+- **Fase 5 — Evolução** (conforme o uso real): alertas de vagas para o candidato, notificação por WhatsApp, relatórios da empresa (visualizações, conversão por link, tempo de fechamento), leitura automática do PDF do currículo, vagas afirmativas e confidenciais.
+- **Fase 6 — Monetização**: planos, cobrança e vaga em destaque (as tabelas `plans` e `subscriptions` já existem).

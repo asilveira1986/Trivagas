@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { siteUrl } from "@/lib/env";
+import { withinRateLimit } from "@/lib/protection";
 import { safeNextPath } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 
@@ -42,6 +43,9 @@ export async function sendMagicLink(_: LoginState, formData: FormData): Promise<
     return { error: "Informe um e-mail válido.", email: String(formData.get("email") ?? "") };
   }
   const next = safeNextPath(String(formData.get("next") ?? ""));
+  if (!(await withinRateLimit("magic-link", 5, 900))) {
+    return { error: "Muitos pedidos de link. Aguarde alguns minutos.", email: email.data };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Building2, Send } from "lucide-react";
+import { Building2, Flag, Send } from "lucide-react";
 import { JobBody, JobFacts, JobHeader } from "@/components/jobs/job-details";
 import { ShareButtons } from "@/components/jobs/share-buttons";
 import { ViewTracker } from "@/components/jobs/view-tracker";
@@ -73,6 +73,13 @@ export default async function PublicJobPage({ params, searchParams }: PageProps<
         <h2 className="text-lg font-extrabold">Conhece alguém para esta vaga? Compartilhe</h2>
         <ShareButtons url={jobUrl(job.slug)} text={`Vaga: ${job.title} – ${company?.trade_name ?? ""}`} />
       </section>
+
+      <p className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Flag className="size-3.5" /> Algo errado nesta vaga? Nunca pague para participar de seleção.{" "}
+        <Link href={`${jobPath(job.slug)}/denunciar`} className="font-semibold underline">
+          Denunciar
+        </Link>
+      </p>
     </article>
   );
 }

@@ -34,10 +34,19 @@ const RENDERERS: Record<string, (p: Payload) => Email | null> = {
       });
     }
     const requested = p.decision === "changes_requested";
+    const takenDown = p.decision === "rejected" && p.was_published === "true";
     return layout({
-      subject: requested ? `Ajuste solicitado na vaga "${p.job_title}"` : `A vaga "${p.job_title}" não foi aprovada`,
+      subject: requested
+        ? `Ajuste solicitado na vaga "${p.job_title}"`
+        : takenDown
+          ? `A vaga "${p.job_title}" foi retirada do ar`
+          : `A vaga "${p.job_title}" não foi aprovada`,
       paragraphs: [
-        requested ? "Nossa equipe pediu um ajuste antes de publicar a vaga." : "Nossa equipe não aprovou a publicação da vaga.",
+        requested
+          ? "Nossa equipe pediu um ajuste antes de publicar a vaga."
+          : takenDown
+            ? "Nossa equipe retirou a vaga do ar após análise."
+            : "Nossa equipe não aprovou a publicação da vaga.",
         `Motivo: ${p.reason ?? "não informado"}`,
       ],
       action: { label: requested ? "Ajustar a vaga" : "Ver a vaga", path },
@@ -83,6 +92,23 @@ const RENDERERS: Record<string, (p: Payload) => Email | null> = {
       action: { label: "Acompanhar candidaturas", path: "/candidato/candidaturas" },
     }),
 
+  inactivity_warning: (p) =>
+    layout({
+      subject: "Seu currículo no Trivagas será removido por inatividade",
+      paragraphs: [
+        `Olá, ${(p.full_name ?? "").split(" ")[0] || "tudo bem"}! Faz tempo que você não acessa o Trivagas.`,
+        "Para proteger seus dados (LGPD), currículos sem acesso por 6 meses são removidos definitivamente. Se quiser manter sua conta, basta entrar no portal nos próximos dias.",
+      ],
+      action: { label: "Entrar e manter minha conta", path: "/entrar?next=/candidato" },
+    }),
+
+  job_reported: (p) =>
+    layout({
+      subject: `Denúncia: "${p.job_title}"`,
+      paragraphs: [`Motivo: ${p.reason}`, "Analise a vaga e, se for o caso, retire-a do ar."],
+      action: { label: "Ver denúncias", path: "/admin/denuncias" },
+    }),
+
   talent_invite: (p) =>
     layout({
       subject: `${p.company_name} convidou você para a vaga "${p.job_title}"`,
@@ -108,5 +134,11 @@ const RENDERERS: Record<string, (p: Payload) => Email | null> = {
 
 export function renderEmail(template: string, payload: unknown): Email | null {
   const render = RENDERERS[template];
-  return render ? render((payload ?? {}) as Payload) : null;
+  if (!render) return null;
+  // Valores do JSON (números, booleanos) chegam como texto aos modelos.
+  const data: Payload = {};
+  for (const [key, value] of Object.entries((payload ?? {}) as Record<string, unknown>)) {
+    data[key] = value == null ? null : String(value);
+  }
+  return render(data);
 }
