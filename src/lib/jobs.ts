@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import type {
+  AffirmativeKind,
   CompanyStatus,
   ContractType,
   EducationLevel,
@@ -44,6 +45,8 @@ export type JobDetail = {
   radius_km: number;
   min_education: EducationLevel | null;
   min_experience_months: number | null;
+  affirmative: AffirmativeKind | null;
+  is_confidential: boolean;
   published_at: string | null;
   submitted_at: string | null;
   created_at: string;
@@ -51,8 +54,8 @@ export type JobDetail = {
   areas: { name: string } | null;
   cities: CityRef;
   companies: {
-    id: string;
-    slug: string;
+    id: string | null;
+    slug: string | null;
     trade_name: string;
     logo_path: string | null;
     status: CompanyStatus;
@@ -66,7 +69,7 @@ export type JobDetail = {
 export const JOB_DETAIL_COLUMNS = `
   id, slug, company_id, title, description, status, contract_type, work_mode, city_id, area_id,
   salary_min, salary_max, benefits, positions, closes_at, region_mode, radius_km, min_education,
-  min_experience_months, published_at, submitted_at, created_at, updated_at,
+  min_experience_months, affirmative, is_confidential, published_at, submitted_at, created_at, updated_at,
   areas(name),
   cities(name, states(uf)),
   companies(id, slug, trade_name, logo_path, status, description, cities(name, states(uf))),
@@ -87,16 +90,12 @@ export const getJobForUser = cache(async (id: string) => {
   return sortQuestions(data);
 });
 
-// Vaga pública pelo endereço amigável: só aparece se estiver publicada.
+// Vaga pública pelo endereço amigável: só aparece se estiver publicada. Passa pela função
+// public_job(), que oculta a empresa das vagas confidenciais.
 export const getPublishedJob = cache(async (slug: string) => {
   const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("jobs")
-    .select(JOB_DETAIL_COLUMNS)
-    .eq("slug", slug)
-    .eq("status", "published")
-    .maybeSingle<JobDetail>();
-  return sortQuestions(data);
+  const { data } = await supabase.rpc("public_job", { job_slug: slug });
+  return sortQuestions((data as JobDetail | null) ?? null);
 });
 
 export type ModerationEntry = {

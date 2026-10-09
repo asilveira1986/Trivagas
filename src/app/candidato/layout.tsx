@@ -7,6 +7,7 @@ const NAV = [
   { href: "/candidato", label: "Início" },
   { href: "/candidato/curriculo", label: "Meu currículo" },
   { href: "/candidato/candidaturas", label: "Candidaturas" },
+  { href: "/candidato/alertas", label: "Alertas" },
   { href: "/candidato/privacidade", label: "Privacidade" },
 ];
 

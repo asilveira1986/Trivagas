@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/format";
 import { jobPostingJsonLd } from "@/lib/job-posting";
 import { getPublishedJob, locationLabel } from "@/lib/jobs";
-import { CONTRACT_TYPES } from "@/lib/labels";
+import { AFFIRMATIVE_KINDS, CONTRACT_TYPES } from "@/lib/labels";
 import { companyPath, jobPath, jobUrl } from "@/lib/links";
 
 export async function generateMetadata({ params }: PageProps<"/v/[slug]">): Promise<Metadata> {
@@ -41,6 +41,11 @@ export default async function PublicJobPage({ params, searchParams }: PageProps<
       <ViewTracker jobId={job.id} source={typeof origem === "string" ? origem : undefined} />
 
       <JobHeader job={job} />
+      {job.affirmative && (
+        <p className="w-fit rounded-full bg-accent px-3 py-1 text-sm font-bold text-accent-foreground">
+          Vaga afirmativa: {AFFIRMATIVE_KINDS[job.affirmative]}
+        </p>
+      )}
       <JobFacts job={job} />
 
       <div className="flex flex-col gap-3 rounded-xl bg-primary/10 p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -63,9 +68,13 @@ export default async function PublicJobPage({ params, searchParams }: PageProps<
             <Building2 className="size-5 text-primary" /> {company.trade_name}
           </h2>
           {company.description && <p className="line-clamp-4 whitespace-pre-line text-sm">{company.description}</p>}
-          <Link href={companyPath(company.slug)} className="text-sm font-semibold text-primary hover:underline">
-            Ver todas as vagas da empresa
-          </Link>
+          {company.slug ? (
+            <Link href={companyPath(company.slug)} className="text-sm font-semibold text-primary hover:underline">
+              Ver todas as vagas da empresa
+            </Link>
+          ) : (
+            <p className="text-xs text-muted-foreground">Vaga confidencial: a empresa se identifica durante o processo seletivo.</p>
+          )}
         </section>
       )}
 

@@ -2,7 +2,7 @@
 
 Portal de anúncio de vagas: a empresa cadastra a vaga, compartilha um link público e acompanha as candidaturas; os currículos formam um banco de talentos consultado por região e aderência. Escopo completo em [`docs/escopo.md`](docs/escopo.md).
 
-**Situação:** Fases 0 a 4 (Fundação, Empresa e vagas, Candidato e candidatura, Banco de currículos e Lançamento nacional) concluídas no código. Falta a implantação e a lista de verificação de lançamento abaixo. Falta criar os projetos Supabase/Vercel e publicar (passo a passo abaixo).
+**Situação:** Fases 0 a 5 (Fundação, Empresa e vagas, Candidato e candidatura, Banco de currículos, Lançamento nacional e Evolução) concluídas no código. Falta a implantação e a lista de verificação de lançamento abaixo. Falta criar os projetos Supabase/Vercel e publicar (passo a passo abaixo).
 
 ## Stack
 
@@ -97,6 +97,16 @@ scripts/
 - **Textos legais**: termos de uso e política de privacidade completos como minuta (finalidades, compartilhamento, direitos, retenção, segurança, contato do encarregado lido de `app_settings.privacy_contact_email`) — **precisam de revisão jurídica**.
 - **Monitoramento**: Vercel Analytics e Speed Insights (ativos ao publicar na Vercel).
 
+## O que a Fase 5 entrega
+
+- **Alertas de vagas** (`/candidato/alertas`, até 5 por pessoa): palavra-chave, cidade e raio, área, modalidade, contrato e "só afirmativas", diário ou semanal; criados também com um clique a partir de uma busca em `/vagas`. A rotina diária (`queue_job_alerts`, chamada por `/api/notificacoes`) envia só as vagas novas desde o último aviso.
+- **WhatsApp** (Cloud API da Meta): o candidato ativa em Privacidade (consentimento registrado; exige telefone). Recebe por WhatsApp, além do e-mail, entrevista/aprovação/reprovação, convites e alertas. A fila é separada por canal; os **modelos de mensagem** (`trivagas_etapa_candidatura`, `trivagas_convite_vaga`, `trivagas_alerta_vagas`, com as variáveis descritas em `src/lib/notifications/whatsapp.ts`) precisam ser aprovados no WhatsApp Business Manager.
+- **Relatórios da empresa** (`/empresa/relatorios`, 30/90 dias ou 12 meses): visualizações, candidaturas, conversão e tempo médio até encerrar; visualizações por origem do link; tabela por vaga com funil e principal origem; exportação **CSV** (separador ";", abre direto no Excel).
+- **Leitura automática do PDF** (`/candidato/curriculo` → "Ler meu PDF"): o PDF anexado é enviado à API do Claude (modelo `claude-opus-5-5`, saída estruturada em JSON Schema com área, escolaridade e habilidades restritas ao catálogo, `fallbacks: "default"` para recusas) e o formulário é **preenchido para revisão** — nada é salvo sem o candidato confirmar. Limite de 5 leituras por dia; requer `ANTHROPIC_API_KEY` (sem a chave, o botão não aparece).
+- **Vagas afirmativas**: PcD, mulheres, pessoas negras, indígenas, LGBTQIA+ e 50+, com selo nas páginas e filtro na busca pública e nos alertas.
+- **Declaração voluntária de deficiência** (dado sensível, LGPD art. 11): registrada em Privacidade com consentimento específico (e retirada ao apagar), em tabela própria (`resume_disability`) que só a empresa de uma **vaga PcD em que a pessoa se candidatou** consegue ler — nunca aparece no banco de talentos.
+- **Vagas confidenciais**: o nome, o logotipo e a página da empresa não aparecem no anúncio, na busca, na imagem de prévia, nos dados estruturados nem nos e-mails e WhatsApp ao candidato. A vaga confidencial não é lida direto pela API: a página pública usa `public_job()` e a busca usa `search_jobs()`, que mascaram a empresa.
+
 ## Lista de verificação de lançamento
 
 - [ ] Projetos Supabase (dev e produção) com as migrações aplicadas (`npx supabase db push`) e **backups diários** ativos (plano Pro: *Database → Backups*; considere PITR).
@@ -106,6 +116,7 @@ scripts/
 - [ ] As duas rotinas do `vercel.json` aparecem em *Vercel → Settings → Cron Jobs* (`/api/notificacoes` e `/api/rotinas/retencao`).
 - [ ] `privacy_contact_email` em `app_settings` com o e-mail real do encarregado de dados.
 - [ ] Termos de uso e política de privacidade revisados por advogado; ao mudar o texto, atualizar a versão em `src/lib/legal.ts` e em `app_settings`.
+- [ ] (Fase 5) `ANTHROPIC_API_KEY` para a leitura de PDF; `WHATSAPP_TOKEN` e `WHATSAPP_PHONE_NUMBER_ID` com os três modelos de mensagem aprovados na Meta.
 - [ ] Domínio definitivo apontado para a Vercel e `NEXT_PUBLIC_SITE_URL` atualizado; sitemap enviado ao Google Search Console.
 - [ ] Logotipo original em SVG no lugar do símbolo provisório (`src/components/brand/trivagas-mark.tsx` e `src/app/icon.svg`).
 - [ ] Teste de ponta a ponta em produção: empresa publica → vaga aprovada abre no WhatsApp → candidato se candidata → empresa avalia → convite do banco de talentos.
@@ -157,6 +168,8 @@ O CI do GitHub (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull re
 
 **Critério de conclusão da Fase 0:** em produção, cadastrar um candidato, uma empresa e o admin, e entrar em cada área.
 
+**Critério de conclusão da Fase 5:** definido conforme o uso real (escopo, seção 9); as funcionalidades listadas acima estão prontas para ativar.
+
 **Critério de conclusão da Fase 4:** portal aberto para todo o Brasil, com a lista de verificação de lançamento concluída.
 
 **Critério de conclusão da Fase 3:** com candidatos no banco de talentos em cidades diferentes, a vaga publicada mostra os currículos na ordem mesma cidade → dentro do raio → mesmo estado → demais regiões, e por aderência dentro de cada faixa; o convite aceito libera o contato.
@@ -174,5 +187,4 @@ O CI do GitHub (`.github/workflows/ci.yml`) roda tudo isso a cada push e pull re
 
 ## Próximas fases
 
-- **Fase 5 — Evolução** (conforme o uso real): alertas de vagas para o candidato, notificação por WhatsApp, relatórios da empresa (visualizações, conversão por link, tempo de fechamento), leitura automática do PDF do currículo, vagas afirmativas e confidenciais.
 - **Fase 6 — Monetização**: planos, cobrança e vaga em destaque (as tabelas `plans` e `subscriptions` já existem).

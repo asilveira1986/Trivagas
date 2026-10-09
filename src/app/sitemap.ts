@@ -9,14 +9,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const supabase = createPublicClient();
   const [{ data: jobs }, { data: companies }] = await Promise.all([
-    supabase.from("jobs").select("slug, updated_at").eq("status", "published").order("published_at", { ascending: false }).limit(45000),
+    supabase.rpc("public_job_slugs"),
     supabase.from("companies").select("slug, updated_at").eq("status", "approved").limit(4000),
   ]);
 
   return [
     { url: `${base}/`, changeFrequency: "daily", priority: 1 },
     { url: `${base}/vagas`, changeFrequency: "hourly", priority: 0.9 },
-    ...(jobs ?? []).map((job) => ({
+    ...((jobs ?? []) as { slug: string; updated_at: string }[]).map((job) => ({
       url: `${base}/v/${job.slug}`,
       lastModified: job.updated_at,
       changeFrequency: "daily" as const,

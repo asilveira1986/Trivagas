@@ -42,6 +42,8 @@ export default async function NewJobPage() {
           radiusKm: "30",
           minEducation: "",
           minExperienceYears: "",
+          affirmative: "",
+          isConfidential: false,
           skills: [],
           questions: [],
         }}

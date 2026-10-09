@@ -12,6 +12,7 @@
     "db:cities": "node scripts/generate-cities-migration.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.132.1",
     "@radix-ui/react-label": "^2.1.16",
     "@radix-ui/react-slot": "^1.4.0",
     "@supabase/ssr": "^0.12.7",

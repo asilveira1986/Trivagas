@@ -25,7 +25,7 @@ type ApplicationDetail = {
   source: ApplicationSource;
   source_detail: string | null;
   created_at: string;
-  jobs: { id: string; title: string; company_id: string } | null;
+  jobs: { id: string; title: string; company_id: string; affirmative: string | null } | null;
   resumes: (ResumeDetail & { profiles: { full_name: string; email: string | null; phone: string | null } | null }) | null;
   application_answers: { answer: string; job_questions: { question: string; position: number } | null }[];
   application_notes: { id: string; body: string; created_at: string; author_id: string | null; profiles: { full_name: string } | null }[];
@@ -43,7 +43,7 @@ export default async function ApplicationPage({ params }: PageProps<"/empresa/ca
     .from("applications")
     .select(
       `id, stage, rating, source, source_detail, created_at,
-       jobs(id, title, company_id),
+       jobs(id, title, company_id, affirmative),
        resumes(${RESUME_COLUMNS}, profiles(full_name, email, phone)),
        application_answers(answer, job_questions(question, position)),
        application_notes(id, body, created_at, author_id, profiles(full_name))`,
@@ -54,9 +54,17 @@ export default async function ApplicationPage({ params }: PageProps<"/empresa/ca
 
   const resume = sortResume(application.resumes);
   const candidate = resume.profiles;
-  const [pdfUrl, { data: experienceMonths }] = await Promise.all([
+  const [pdfUrl, { data: experienceMonths }, { data: disability }] = await Promise.all([
     signedResumePdfUrl(resume.pdf_path),
     supabase.rpc("resume_experience_months", { target_resume: resume.id }),
+    // Declaração de deficiência: o RLS só libera para candidaturas a vagas PcD da empresa.
+    application.jobs?.affirmative === "pcd"
+      ? supabase
+          .from("resume_disability")
+          .select("details, needs_accommodation")
+          .eq("resume_id", resume.id)
+          .maybeSingle<{ details: string | null; needs_accommodation: string | null }>()
+      : Promise.resolve({ data: null }),
     // LGPD: registra o acesso da empresa ao currículo.
     supabase.rpc("log_audit", {
       audit_action: "view_resume",
@@ -127,6 +135,15 @@ export default async function ApplicationPage({ params }: PageProps<"/empresa/ca
               </Button>
             )}
           </section>
+
+          {disability && (
+            <section className="flex flex-col gap-1 rounded-xl border border-accent bg-accent/10 p-4 text-sm">
+              <h2 className="font-extrabold">Declaração de pessoa com deficiência</h2>
+              {disability.details && <p>{disability.details}</p>}
+              {disability.needs_accommodation && <p>Adaptações: {disability.needs_accommodation}</p>}
+              <p className="text-xs text-muted-foreground">Dado sensível, compartilhado só para esta vaga PcD. Não repasse a terceiros.</p>
+            </section>
+          )}
 
           {answers.length > 0 && (
             <section className="flex flex-col gap-2">

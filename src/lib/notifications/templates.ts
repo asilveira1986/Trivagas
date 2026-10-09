@@ -7,7 +7,17 @@ type Payload = Record<string, string | null | undefined>;
 const escape = (value: unknown) =>
   String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-function layout({ subject, paragraphs, action }: { subject: string; paragraphs: string[]; action?: { label: string; path: string } }): Email {
+function layout({
+  subject,
+  paragraphs,
+  action,
+  links = [],
+}: {
+  subject: string;
+  paragraphs: string[];
+  action?: { label: string; path: string };
+  links?: { label: string; path: string }[];
+}): Email {
   const url = action ? `${siteUrl()}${action.path}` : null;
   const html = `<!doctype html><html lang="pt-BR"><body style="margin:0;background:#f3f5f7;font-family:Arial,Helvetica,sans-serif;color:#1b2836">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:24px 12px">
@@ -16,10 +26,17 @@ function layout({ subject, paragraphs, action }: { subject: string; paragraphs: 
 <tr><td style="padding:24px 28px 8px;font-size:22px;font-weight:800">TRIVagas</td></tr>
 <tr><td style="padding:8px 28px 0;font-size:18px;font-weight:700">${escape(subject)}</td></tr>
 ${paragraphs.map((p) => `<tr><td style="padding:12px 28px 0;font-size:15px;line-height:1.5">${escape(p)}</td></tr>`).join("")}
+${links.map((l) => `<tr><td style="padding:10px 28px 0;font-size:15px"><a href="${escape(siteUrl() + l.path)}" style="color:#00a651;font-weight:700">${escape(l.label)}</a></td></tr>`).join("")}
 ${url ? `<tr><td style="padding:24px 28px 8px"><a href="${escape(url)}" style="display:inline-block;background:#00a651;color:#ffffff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:8px">${escape(action!.label)}</a></td></tr>` : ""}
 <tr><td style="padding:24px 28px;font-size:12px;color:#5b6775">Você recebeu este e-mail porque tem uma conta no Trivagas.</td></tr>
 </table></td></tr></table></body></html>`;
-  const text = [subject, "", ...paragraphs, ...(url ? ["", `${action!.label}: ${url}`] : [])].join("\n");
+  const text = [
+    subject,
+    "",
+    ...paragraphs,
+    ...links.map((l) => `${l.label}: ${siteUrl()}${l.path}`),
+    ...(url ? ["", `${action!.label}: ${url}`] : []),
+  ].join("\n");
   return { subject, html, text };
 }
 
@@ -92,6 +109,21 @@ const RENDERERS: Record<string, (p: Payload) => Email | null> = {
       action: { label: "Acompanhar candidaturas", path: "/candidato/candidaturas" },
     }),
 
+  job_alert: (p) => {
+    let jobs: { title: string; slug: string; company_name: string; city: string }[] = [];
+    try {
+      jobs = JSON.parse(p.jobs ?? "[]");
+    } catch {
+      jobs = [];
+    }
+    return layout({
+      subject: `${jobs.length} ${jobs.length === 1 ? "vaga nova" : "vagas novas"} para o alerta "${p.alert_name}"`,
+      paragraphs: ["Estas vagas foram publicadas desde o último aviso:"],
+      links: jobs.map((job) => ({ label: `${job.title} — ${job.company_name} (${job.city})`, path: `/v/${job.slug}?origem=alerta` })),
+      action: { label: "Gerenciar alertas", path: "/candidato/alertas" },
+    });
+  },
+
   inactivity_warning: (p) =>
     layout({
       subject: "Seu currículo no Trivagas será removido por inatividade",
@@ -138,7 +170,7 @@ export function renderEmail(template: string, payload: unknown): Email | null {
   // Valores do JSON (números, booleanos) chegam como texto aos modelos.
   const data: Payload = {};
   for (const [key, value] of Object.entries((payload ?? {}) as Record<string, unknown>)) {
-    data[key] = value == null ? null : String(value);
+    data[key] = value == null ? null : typeof value === "object" ? JSON.stringify(value) : String(value);
   }
   return render(data);
 }

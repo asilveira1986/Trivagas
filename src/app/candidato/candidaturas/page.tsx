@@ -17,7 +17,7 @@ type InviteRow = {
   id: string;
   message: string | null;
   created_at: string;
-  jobs: { title: string; slug: string; status: JobStatus; companies: { trade_name: string } | null } | null;
+  jobs: { title: string; slug: string; status: JobStatus; is_confidential: boolean; companies: { trade_name: string } | null } | null;
 };
 
 type Row = {
@@ -25,7 +25,7 @@ type Row = {
   stage: ApplicationStage;
   created_at: string;
   updated_at: string;
-  jobs: { title: string; slug: string; status: JobStatus; companies: { trade_name: string } | null } | null;
+  jobs: { title: string; slug: string; status: JobStatus; is_confidential: boolean; companies: { trade_name: string } | null } | null;
 };
 
 export default async function MyApplicationsPage({ searchParams }: PageProps<"/candidato/candidaturas">) {
@@ -35,12 +35,12 @@ export default async function MyApplicationsPage({ searchParams }: PageProps<"/c
   const [{ data }, { data: inviteRows }] = await Promise.all([
     supabase
       .from("applications")
-      .select("id, stage, created_at, updated_at, jobs(title, slug, status, companies(trade_name))")
+      .select("id, stage, created_at, updated_at, jobs(title, slug, status, is_confidential, companies(trade_name))")
       .order("created_at", { ascending: false })
       .overrideTypes<Row[], { merge: false }>(),
     supabase
       .from("talent_invites")
-      .select("id, message, created_at, jobs(title, slug, status, companies(trade_name))")
+      .select("id, message, created_at, jobs(title, slug, status, is_confidential, companies(trade_name))")
       .eq("status", "pending")
       .order("created_at", { ascending: false })
       .overrideTypes<InviteRow[], { merge: false }>(),
@@ -71,7 +71,7 @@ export default async function MyApplicationsPage({ searchParams }: PageProps<"/c
                 <div className="flex flex-col">
                   <span className="text-lg font-extrabold">{invite.jobs?.title}</span>
                   <span className="text-sm text-muted-foreground">
-                    {invite.jobs?.companies?.trade_name} · convite de {formatDate(invite.created_at)}
+                    {invite.jobs?.is_confidential ? "Empresa confidencial" : invite.jobs?.companies?.trade_name} · convite de {formatDate(invite.created_at)}
                   </span>
                 </div>
                 {invite.message && <p className="text-sm">“{invite.message}”</p>}
@@ -116,7 +116,7 @@ export default async function MyApplicationsPage({ searchParams }: PageProps<"/c
                       <span className="text-lg font-extrabold">{job?.title ?? "Vaga removida"}</span>
                     )}
                     <span className="text-sm text-muted-foreground">
-                      {job?.companies?.trade_name} · enviada em {formatDate(application.created_at)}
+                      {job?.is_confidential ? "Empresa confidencial" : job?.companies?.trade_name} · enviada em {formatDate(application.created_at)}
                       {!open && " · vaga encerrada"}
                     </span>
                   </div>

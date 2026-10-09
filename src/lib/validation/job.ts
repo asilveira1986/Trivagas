@@ -73,6 +73,8 @@ export const jobSchema = z
     radiusKm: z.coerce.number().int().min(0).max(1000, "Raio máximo de 1000 km"),
     minEducation: optionalEnum(EDUCATION_VALUES),
     minExperienceYears: optionalNumber(z.number().min(0).max(50)),
+    affirmative: optionalEnum(["pcd", "women", "black_people", "indigenous", "lgbtqia", "people_50_plus"] as const),
+    isConfidential: z.preprocess((value) => value === "on" || value === true, z.boolean()).default(false),
     skills: jsonArray(skillSchema, 30, "Selecione no máximo 30 habilidades"),
     questions: jsonArray(questionSchema, 10, "Use no máximo 10 perguntas"),
   })
@@ -108,5 +110,7 @@ export function toSaveJobPayload(job: JobInput) {
     radius_km: job.radiusKm,
     min_education: job.minEducation,
     min_experience_months: job.minExperienceYears == null ? null : Math.round(job.minExperienceYears * 12),
+    affirmative: job.affirmative,
+    is_confidential: job.isConfidential,
   };
 }

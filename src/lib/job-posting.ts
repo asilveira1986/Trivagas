@@ -25,7 +25,7 @@ export function jobPostingJsonLd(job: JobDetail) {
     hiringOrganization: {
       "@type": "Organization",
       name: company?.trade_name,
-      sameAs: company ? companyUrl(company.slug) : undefined,
+      sameAs: company?.slug ? companyUrl(company.slug) : undefined,
       logo: logoUrl(company?.logo_path) ?? undefined,
     },
   };

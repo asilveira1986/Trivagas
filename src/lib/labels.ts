@@ -74,6 +74,8 @@ export const VIEW_SOURCES: Record<string, string> = {
   qrcode: "QR Code",
   link: "Link copiado",
   empresa: "Página da empresa",
+  alerta: "Alerta de vagas",
+  convite: "Convite",
   direct: "Acesso direto",
 };
 
@@ -145,3 +147,14 @@ export const INVITE_STATUSES = {
 
 export type TalentPoolStatus = keyof typeof TALENT_POOL_STATUSES;
 export type InviteStatus = keyof typeof INVITE_STATUSES;
+
+export const AFFIRMATIVE_KINDS = {
+  pcd: "Pessoas com deficiência (PcD)",
+  women: "Mulheres",
+  black_people: "Pessoas negras",
+  indigenous: "Pessoas indígenas",
+  lgbtqia: "Pessoas LGBTQIA+",
+  people_50_plus: "Pessoas com 50 anos ou mais",
+} as const;
+
+export type AffirmativeKind = keyof typeof AFFIRMATIVE_KINDS;

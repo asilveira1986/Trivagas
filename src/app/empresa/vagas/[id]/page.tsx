@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { requireMembership } from "@/lib/company";
 import { formatDateTime } from "@/lib/format";
 import { getJobForUser, getModerationHistory } from "@/lib/jobs";
-import { JOB_STATUSES, MODERATION_DECISIONS, QUESTION_TYPES, VIEW_SOURCES, type JobStatus } from "@/lib/labels";
+import { AFFIRMATIVE_KINDS, JOB_STATUSES, MODERATION_DECISIONS, QUESTION_TYPES, VIEW_SOURCES, type JobStatus } from "@/lib/labels";
 import { jobPath, jobUrl } from "@/lib/links";
 import { createClient } from "@/lib/supabase/server";
 
@@ -63,6 +63,14 @@ export default async function CompanyJobPage({ params, searchParams }: PageProps
           <JobHeader job={job} />
           <JobStatusBadge status={job.status} />
         </div>
+        {(job.is_confidential || job.affirmative) && (
+          <p className="flex flex-wrap gap-2 text-xs font-bold">
+            {job.is_confidential && <span className="rounded-full bg-secondary px-2.5 py-0.5 text-secondary-foreground">Confidencial</span>}
+            {job.affirmative && (
+              <span className="rounded-full bg-accent px-2.5 py-0.5 text-accent-foreground">Afirmativa: {AFFIRMATIVE_KINDS[job.affirmative]}</span>
+            )}
+          </p>
+        )}
         <JobActions job={job} />
       </div>
 

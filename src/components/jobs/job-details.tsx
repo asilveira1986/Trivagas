@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Banknote, Briefcase, Building2, CalendarClock, GraduationCap, MapPin, Users } from "lucide-react";
+import { Banknote, Briefcase, Building2, CalendarClock, EyeOff, GraduationCap, MapPin, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, formatSalary } from "@/lib/format";
 import { locationLabel, type JobDetail } from "@/lib/jobs";
@@ -13,6 +13,8 @@ export function JobHeader({ job, as: Heading = "h1" }: { job: JobDetail; as?: "h
       <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-background">
         {logo ? (
           <Image src={logo} alt="" width={64} height={64} className="size-full object-contain" unoptimized />
+        ) : job.is_confidential ? (
+          <EyeOff className="size-7 text-muted-foreground" />
         ) : (
           <Building2 className="size-7 text-muted-foreground" />
         )}

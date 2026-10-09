@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search } from "lucide-react";
+import { BellRing, Search } from "lucide-react";
 import { CitySelect } from "@/components/forms/city-select";
 import { JobCard } from "@/components/jobs/job-card";
 import { Button } from "@/components/ui/button";
@@ -118,6 +118,10 @@ export default async function PublicJobsPage({ searchParams }: PageProps<"/vagas
             </NativeSelect>
           </label>
         </div>
+        <label className="flex items-center gap-2 text-sm font-semibold sm:col-span-2">
+          <input type="checkbox" name="afirmativas" value="1" defaultChecked={filters.affirmativeOnly} className="size-4 accent-primary" />
+          Só vagas afirmativas (PcD, mulheres, pessoas negras e outras)
+        </label>
         <div className="flex gap-2 sm:col-span-2">
           <Button type="submit">
             <Search /> Buscar vagas
@@ -127,6 +131,25 @@ export default async function PublicJobsPage({ searchParams }: PageProps<"/vagas
           </Button>
         </div>
       </form>
+
+      <p className="text-sm">
+        <Link
+          href={`/candidato/alertas?${new URLSearchParams(
+            Object.entries({
+              q: filters.query ?? "",
+              cidade: filters.cityId ? String(filters.cityId) : "",
+              raio: filters.radiusKm != null ? String(filters.radiusKm) : "",
+              area: filters.areaId ?? "",
+              modalidade: filters.mode ?? "",
+              contrato: filters.contract ?? "",
+              afirmativas: filters.affirmativeOnly ? "1" : "",
+            }).filter(([, v]) => v),
+          ).toString()}`}
+          className="inline-flex items-center gap-1 font-semibold text-primary hover:underline"
+        >
+          <BellRing className="size-4" /> Criar alerta com esta busca
+        </Link>
+      </p>
 
       {city && (
         <p className="text-sm text-muted-foreground">

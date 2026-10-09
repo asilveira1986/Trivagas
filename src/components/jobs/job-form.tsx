@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
 import type { JobFormState } from "@/app/empresa/vagas/actions";
-import { CONTRACT_TYPES, EDUCATION_LEVELS, REGION_MODES, WORK_MODES, type JobStatus, type WorkMode } from "@/lib/labels";
+import { AFFIRMATIVE_KINDS, CONTRACT_TYPES, EDUCATION_LEVELS, REGION_MODES, WORK_MODES, type JobStatus, type WorkMode } from "@/lib/labels";
 import { usePreservingSubmit } from "@/hooks/use-preserving-submit";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,8 @@ export type JobFormValues = {
   radiusKm: string;
   minEducation: string;
   minExperienceYears: string;
+  affirmative: string;
+  isConfidential: boolean;
   skills: SelectedSkill[];
   questions: EditableQuestion[];
 };
@@ -171,6 +173,29 @@ export function JobForm({
             <input type="hidden" name="regionMode" value="prioritize" />
           </>
         )}
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2">
+        <h2 className="text-lg font-extrabold sm:col-span-2">Inclusão e sigilo</h2>
+        <Field id="affirmative" label="Vaga afirmativa" hint="Opcional. Destaca a vaga para o público escolhido." errors={errors.affirmative}>
+          <NativeSelect id="affirmative" name="affirmative" defaultValue={values.affirmative}>
+            <option value="">Não é vaga afirmativa</option>
+            {Object.entries(AFFIRMATIVE_KINDS).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </NativeSelect>
+        </Field>
+        <label className="flex items-start gap-2 rounded-lg border p-3 text-sm sm:self-end">
+          <input type="checkbox" name="isConfidential" defaultChecked={values.isConfidential} className="mt-0.5 size-4 accent-primary" />
+          <span>
+            <strong>Vaga confidencial</strong>
+            <span className="block text-muted-foreground">
+              O nome e o logotipo da empresa não aparecem no anúncio, no link nem nos e-mails aos candidatos.
+            </span>
+          </span>
+        </label>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2">

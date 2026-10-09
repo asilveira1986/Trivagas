@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Área do candidato" };
 
-type Row = { id: string; stage: ApplicationStage; jobs: { title: string; companies: { trade_name: string } | null } | null };
+type Row = { id: string; stage: ApplicationStage; jobs: { title: string; is_confidential: boolean; companies: { trade_name: string } | null } | null };
 
 export default async function CandidateHome() {
   const supabase = await createClient();
@@ -21,7 +21,7 @@ export default async function CandidateHome() {
     getMyResume(),
     supabase
       .from("applications")
-      .select("id, stage, jobs(title, companies(trade_name))")
+      .select("id, stage, jobs(title, is_confidential, companies(trade_name))")
       .order("updated_at", { ascending: false })
       .limit(5)
       .overrideTypes<Row[], { merge: false }>(),
@@ -76,7 +76,7 @@ export default async function CandidateHome() {
               <li key={application.id} className="flex items-center justify-between gap-2 py-2 text-sm">
                 <span>
                   <strong>{application.jobs?.title}</strong>
-                  <span className="text-muted-foreground"> · {application.jobs?.companies?.trade_name}</span>
+                  <span className="text-muted-foreground"> · {application.jobs?.is_confidential ? "Empresa confidencial" : application.jobs?.companies?.trade_name}</span>
                 </span>
                 <StageBadge stage={application.stage} audience="candidate" />
               </li>

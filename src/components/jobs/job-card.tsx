@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Building2, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatDate, formatSalary } from "@/lib/format";
-import { CONTRACT_TYPES, WORK_MODES } from "@/lib/labels";
+import { AFFIRMATIVE_KINDS, CONTRACT_TYPES, WORK_MODES } from "@/lib/labels";
 import { jobPath, logoUrl } from "@/lib/links";
 import type { PublicJob } from "@/lib/public-jobs";
 
@@ -37,6 +37,7 @@ export function JobCard({ job }: { job: PublicJob }) {
             </span>
           </span>
           <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            {job.affirmative && <Badge variant="warning">Afirmativa: {AFFIRMATIVE_KINDS[job.affirmative]}</Badge>}
             {salary && <Badge variant="success">{salary}</Badge>}
             publicada em {formatDate(job.published_at)}
           </span>

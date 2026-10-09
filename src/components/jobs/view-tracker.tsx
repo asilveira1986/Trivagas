@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const KNOWN_SOURCES = new Set(["whatsapp", "linkedin", "facebook", "qrcode", "link", "empresa"]);
+const KNOWN_SOURCES = new Set(["whatsapp", "linkedin", "facebook", "qrcode", "link", "empresa", "alerta"]);
 
 // Registra uma visualização por sessão do navegador (robôs de prévia não executam JavaScript).
 export function ViewTracker({ jobId, source }: { jobId: string; source?: string }) {

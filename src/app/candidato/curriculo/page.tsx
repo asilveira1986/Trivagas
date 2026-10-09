@@ -7,7 +7,8 @@ import { cityLabel } from "@/lib/company";
 import { formatPhone } from "@/lib/format";
 import { getMyResume, signedResumePdfUrl } from "@/lib/resume";
 import { createClient } from "@/lib/supabase/server";
-import { ResumeForm } from "./resume-form";
+import { resumeImportAvailable } from "@/lib/resume-import";
+import { ResumeEditor } from "./resume-editor";
 
 export const metadata: Metadata = { title: "Meu currículo" };
 
@@ -34,9 +35,10 @@ export default async function ResumePage() {
         <PdfUpload userId={profile.id} downloadUrl={pdfUrl} />
       </section>
 
-      <ResumeForm
+      <ResumeEditor
         {...catalogs}
-        values={{
+        canImport={resumeImportAvailable() && Boolean(resume?.pdf_path)}
+        initial={{
           fullName: profile.full_name,
           phone: formatPhone(profile.phone),
           city: profile.city_id && city ? { id: profile.city_id, label: cityLabel(city) ?? "" } : null,

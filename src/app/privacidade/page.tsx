@@ -31,7 +31,9 @@ export default async function PrivacyPage() {
       items: [
         "Candidatura: com sua autorização em cada vaga, seu currículo e contatos são enviados à empresa daquela vaga.",
         "Banco de talentos: só com sua autorização expressa, empresas aprovadas encontram seu perfil profissional; telefone, e-mail e PDF são liberados apenas se você aceitar um convite. Você pode pausar ou retirar a autorização a qualquer momento.",
-        "Avisos por e-mail sobre suas candidaturas, vagas e conta.",
+        "Avisos por e-mail sobre suas candidaturas, vagas, alertas e conta; por WhatsApp, só se você ativar.",
+        "Declaração de deficiência (dado sensível, opcional): com consentimento específico, mostrada apenas às empresas de vagas para pessoas com deficiência em que você se candidatar.",
+        "Leitura automática do PDF (opcional): quando você pede, o currículo em PDF é processado por inteligência artificial apenas para sugerir o preenchimento do formulário.",
         "Cada autorização fica registrada com data e versão do termo.",
       ],
     },
@@ -39,7 +41,8 @@ export default async function PrivacyPage() {
       title: "3. Com quem compartilhamos",
       items: [
         "Com as empresas, apenas nos casos acima. Não vendemos dados.",
-        "Com fornecedores que operam o serviço (hospedagem, banco de dados e envio de e-mails), sob contrato e só para essa finalidade.",
+        "Com fornecedores que operam o serviço — hospedagem (Vercel), banco de dados (Supabase), e-mails (Resend), WhatsApp (Meta) e leitura automática do PDF (Anthropic) —, sob contrato e só para essas finalidades.",
+        "Em vagas confidenciais, o nome da empresa não é mostrado no anúncio nem nos avisos.",
       ],
     },
     {

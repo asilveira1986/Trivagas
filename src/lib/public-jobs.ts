@@ -1,5 +1,5 @@
 import "server-only";
-import type { ContractType, WorkMode } from "@/lib/labels";
+import type { AffirmativeKind, ContractType, WorkMode } from "@/lib/labels";
 import { createPublicClient } from "@/lib/supabase/public";
 
 export type PublicJob = {
@@ -17,6 +17,8 @@ export type PublicJob = {
   salary_max: number | null;
   published_at: string;
   distance_km: number | null;
+  affirmative: AffirmativeKind | null;
+  is_confidential: boolean;
   total_count: number;
 };
 
@@ -27,6 +29,7 @@ export type PublicJobFilters = {
   areaId: string | null;
   mode: WorkMode | null;
   contract: ContractType | null;
+  affirmativeOnly?: boolean;
   page: number;
 };
 
@@ -47,6 +50,7 @@ export function parsePublicJobFilters(params: Record<string, string | string[] |
     areaId: /^[0-9a-f-]{36}$/i.test(one("area")) ? one("area") : null,
     mode: MODES.includes(one("modalidade")) ? (one("modalidade") as WorkMode) : null,
     contract: CONTRACTS.includes(one("contrato")) ? (one("contrato") as ContractType) : null,
+    affirmativeOnly: one("afirmativas") === "1",
     page: Math.max(1, int("pagina", 500) ?? 1),
   };
 }
@@ -59,6 +63,7 @@ export async function searchPublicJobs(filters: PublicJobFilters, pageSize = PUB
     area: filters.areaId,
     mode: filters.mode,
     contract: filters.contract,
+    affirmative_only: filters.affirmativeOnly ?? false,
     page_size: pageSize,
     page_offset: (filters.page - 1) * pageSize,
   });

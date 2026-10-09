@@ -103,6 +103,16 @@ export default async function ApplyPage({ params, searchParams }: PageProps<"/v/
         </Alert>
       )}
 
+      {job.affirmative === "pcd" && (
+        <Alert>
+          Vaga para pessoas com deficiência. Se quiser, registre sua declaração em{" "}
+          <Link href="/candidato/privacidade" className="font-semibold underline">
+            Privacidade
+          </Link>{" "}
+          antes de enviar: ela será mostrada só para esta empresa.
+        </Alert>
+      )}
+
       <section className="flex flex-col gap-3 rounded-xl border p-4">
         <div className="flex items-center justify-between gap-2">
           <h2 className="font-extrabold">Seus dados</h2>

@@ -7,7 +7,8 @@ import { formatDateTime } from "@/lib/format";
 import { TALENT_POOL_STATUSES } from "@/lib/labels";
 import { getMyResume } from "@/lib/resume";
 import { createClient } from "@/lib/supabase/server";
-import { DeleteAccountForm, TalentPoolForm } from "./privacy-forms";
+import { requireRole } from "@/lib/auth";
+import { DeleteAccountForm, DisabilityForm, TalentPoolForm, WhatsAppForm } from "./privacy-forms";
 
 export const metadata: Metadata = { title: "Privacidade" };
 
@@ -16,13 +17,18 @@ const PURPOSES: Record<string, string> = {
   privacy_policy: "Política de privacidade",
   application: "Envio de currículo em candidatura",
   talent_pool: "Banco de talentos",
+  disability_data: "Declaração de deficiência",
+  whatsapp: "Avisos por WhatsApp",
 };
 
 export default async function PrivacyPage() {
+  const profile = await requireRole("candidate");
   const supabase = await createClient();
-  const [resume, { data: consents }] = await Promise.all([
+  const [resume, { data: consents }, { data: me }, { data: disability }] = await Promise.all([
     getMyResume(),
     supabase.from("consents").select("purpose, granted, term_version, created_at").order("created_at", { ascending: false }).limit(20),
+    supabase.from("profiles").select("whatsapp_opt_in").eq("id", profile.id).single(),
+    supabase.from("resume_disability").select("details, needs_accommodation").maybeSingle(),
   ]);
   const status = resume?.talent_pool_status ?? "none";
 
@@ -42,6 +48,21 @@ export default async function PrivacyPage() {
           sem você se candidatar. Sem autorização, seu currículo só é visto pelas empresas das vagas em que você se candidatou.
         </p>
         <TalentPoolForm status={status} />
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-xl border p-5">
+        <h2 className="text-lg font-extrabold">Avisos por WhatsApp</h2>
+        <p className="text-sm text-muted-foreground">Além do e-mail, receba no WhatsApp os avisos mais importantes.</p>
+        <WhatsAppForm enabled={Boolean(me?.whatsapp_opt_in)} hasPhone={Boolean(profile.phone)} />
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-xl border p-5">
+        <h2 className="text-lg font-extrabold">Declaração de deficiência (opcional)</h2>
+        <p className="text-sm text-muted-foreground">
+          Se você é uma pessoa com deficiência, pode declarar para participar de vagas PcD. A declaração é voluntária e só aparece
+          para empresas de vagas PcD em que você se candidatar — nunca na busca do banco de talentos.
+        </p>
+        <DisabilityForm current={disability ?? null} />
       </section>
 
       <section className="flex flex-col gap-3 rounded-xl border p-5">

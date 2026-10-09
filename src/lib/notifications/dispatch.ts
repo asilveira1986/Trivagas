@@ -1,5 +1,6 @@
 import "server-only";
 import { renderEmail } from "@/lib/notifications/templates";
+import { dispatchWhatsApp } from "@/lib/notifications/whatsapp";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type QueuedNotification = { id: string; template: string; to_address: string; payload: unknown };
@@ -16,7 +17,7 @@ export async function dispatchNotifications(batchSize = 50): Promise<DispatchRes
     return { sent: 0, failed: 0, skipped: "SUPABASE_SECRET_KEY, RESEND_API_KEY ou EMAIL_FROM não configurados" };
   }
 
-  const { data, error } = await supabase.rpc("claim_notifications", { batch_size: batchSize });
+  const { data, error } = await supabase.rpc("claim_notifications", { batch_size: batchSize, target_channel: "email" });
   if (error) throw new Error(`Falha ao reservar a fila de e-mails: ${error.message}`);
 
   let sent = 0;
@@ -59,6 +60,7 @@ export async function dispatchNotifications(batchSize = 50): Promise<DispatchRes
 export async function dispatchNotificationsSafely() {
   try {
     await dispatchNotifications();
+    await dispatchWhatsApp();
   } catch (err) {
     console.error("[notificações]", err);
   }
